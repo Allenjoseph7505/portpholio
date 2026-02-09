@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALLEN JOSEPH | Full-Stack Architect & Engineering Lead</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --teal: #14b8a6;
+            --teal-bright: #2dd4bf;
+            --slate-dark: #020617;
+            --glass: rgba(15, 23, 42, 0.4); 
+            --glass-border: rgba(255, 255, 255, 0.12);
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            font-family: 'Space Grotesk', sans-serif;
+            background: var(--slate-dark);
+            color: white;
+            scrollbar-width: thin;
+            scrollbar-color: var(--teal) var(--slate-dark);
+        }
+
+        body::-webkit-scrollbar { width: 6px; }
+        body::-webkit-scrollbar-track { background: var(--slate-dark); }
+        body::-webkit-scrollbar-thumb { background: var(--teal); border-radius: 10px; }
+
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            z-index: 1;
+        }
+
+        .scroll-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 8vh 10%;
+            pointer-events: none;
+        }
+
+        .glass-card {
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            padding: 3rem;
+            border-radius: 2.5rem;
+            max-width: 950px;
+            pointer-events: auto;
+            transform: translateY(40px);
+            opacity: 0;
+            transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.8);
+        }
+
+        section.active .glass-card {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .nav-fixed {
+            position: fixed;
+            top: 1.5rem;
+            left: 1.5rem;
+            right: 1.5rem;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            pointer-events: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 0.5rem;
+            pointer-events: auto;
+        }
+
+        .nav-item {
+            background: rgba(255,255,255,0.03);
+            padding: 0.6rem 1.2rem;
+            border-radius: 2rem;
+            backdrop-filter: blur(10px);
+            font-size: 0.7rem;
+            font-weight: 700;
+            border: 1px solid rgba(255,255,255,0.08);
+            transition: 0.3s;
+            color: rgba(255,255,255,0.5);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: var(--teal);
+            color: white;
+            border-color: var(--teal);
+            transform: translateY(-2px);
+        }
+
+        #loader {
+            position: fixed;
+            inset: 0;
+            background: var(--slate-dark);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 1s ease;
+        }
+
+        .stat-badge {
+            background: rgba(20, 184, 166, 0.15);
+            color: var(--teal-bright);
+            padding: 0.5rem 1.25rem;
+            border-radius: 2rem;
+            font-size: 0.7rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            letter-spacing: 2px;
+            border: 1px solid rgba(20, 184, 166, 0.3);
+            text-transform: uppercase;
+        }
+
+        .tech-tag {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 0.3rem 0.7rem;
+            border-radius: 0.5rem;
+            font-size: 0.65rem;
+            font-family: 'Inter', sans-serif;
+            color: var(--teal-bright);
+        }
+
+        .method-step {
+            border-left: 2px solid var(--teal);
+            padding-left: 1.5rem;
+            position: relative;
+        }
+        .method-step::before {
+            content: '';
+            position: absolute;
+            left: -7px;
+            top: 0;
+            width: 12px;
+            height: 12px;
+            background: var(--teal);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--teal);
+        }
+
+        .project-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .project-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            transition: 0.4s;
+            cursor: pointer;
+            display: block;
+            text-decoration: none;
+            color: inherit;
+        }
+        .project-card:hover {
+            border-color: var(--teal);
+            background: rgba(20, 184, 166, 0.05);
+            transform: translateY(-8px);
+        }
+
+        #chatbot-container { position: fixed; bottom: 2rem; right: 2rem; z-index: 1000; }
+        #chatbot-toggle { 
+            background: var(--teal); 
+            color: white; width: 4rem; height: 4rem; 
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; 
+            cursor: pointer; box-shadow: 0 15px 30px rgba(20, 184, 166, 0.4); transition: 0.3s; 
+        }
+        #chatbot-window { 
+            position: absolute; bottom: 5rem; right: 0; 
+            width: 350px; height: 500px; border-radius: 2rem; 
+            background: rgba(10, 15, 30, 0.98); border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(25px); overflow: hidden; display: flex; flex-direction: column;
+            transform-origin: bottom right; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        #chatbot-window.hidden { opacity: 0; transform: scale(0.7) translateY(20px); pointer-events: none; }
+        
+        #copy-toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--teal);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 1rem;
+            font-weight: bold;
+            z-index: 2000;
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        #copy-toast.show { transform: translateX(-50%) translateY(0); }
+    </style>
+</head>
+<body>
+
+    <div id="loader">
+        <div class="mb-6 text-teal-400">
+            <i class="fas fa-microchip fa-beat text-6xl"></i>
+        </div>
+        <!-- CHANGED TEXT HERE -->
+        <h1 class="text-2xl font-bold tracking-[0.8em] text-white">ALLEN JOSEPH</h1>
+        <p class="text-[10px] text-slate-500 mt-4 uppercase tracking-[0.3em]">Loading Professional Data Layers</p>
+        <div class="w-64 h-1 bg-slate-800 mt-8 rounded-full overflow-hidden">
+            <div id="progress-fill" class="h-full w-0 bg-teal-400 transition-all duration-300"></div>
+        </div>
+    </div>
+
+    <nav class="nav-fixed">
+        <div class="text-2xl font-bold tracking-tighter pointer-events-auto cursor-pointer group" onclick="window.scrollTo({top:0, behavior:'smooth'})">
+            ALLEN<span class="text-teal-400">.</span>JS
+        </div>
+        <div class="nav-links">
+            <a href="#home" class="nav-item">Core</a>
+            <a href="#about" class="nav-item">Profile</a>
+            <a href="#skills" class="nav-item">Engine</a>
+            <a href="#method" class="nav-item">Process</a>
+            <a href="#work" class="nav-item">Builds</a>
+            <a href="#contact" class="nav-item">Link</a>
+        </div>
+    </nav>
+
+    <div id="canvas-container"></div>
+    <div id="copy-toast">Copied to clipboard!</div>
+
+    <div class="scroll-content">
+        <!-- HERO -->
+        <section id="home" class="active">
+            <div class="glass-card">
+                <div class="stat-badge"><i class="fas fa-circle text-[8px] animate-pulse"></i> Engineering Digital Futures</div>
+                <h1 class="text-6xl md:text-8xl font-black leading-none mb-8">SCALABLE<br><span class="text-teal-400">ARCHITECTURES.</span></h1>
+                <p class="text-slate-200 text-xl leading-relaxed mb-10 max-w-2xl font-light">
+                    I specialize in designing and deploying high-performance full-stack applications that turn complex business logic into seamless user experiences.
+                </p>
+                <div class="flex flex-wrap gap-6">
+                    <a href="#work" class="bg-teal-500 hover:bg-teal-400 text-white px-10 py-4 rounded-2xl font-bold transition-all shadow-2xl shadow-teal-500/30 transform hover:-translate-y-1">View Production Assets</a>
+                    <div class="flex items-center gap-4">
+                        <a href="https://linkedin.com/in/allenjoseph" target="_blank" class="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-xl hover:text-teal-400 border border-white/5 transition-all"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="https://wa.me/916207014944" target="_blank" class="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-xl hover:text-teal-400 border border-white/5 transition-all"><i class="fab fa-whatsapp"></i></a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- DETAILED PROFILE -->
+        <section id="about">
+            <div class="glass-card">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                    <div class="space-y-6">
+                        <h2 class="text-4xl font-bold mb-4">The Engineer Behind the Code</h2>
+                        <p class="text-slate-300 leading-relaxed">
+                            With a foundation in Computer Science and over 3 years of rigorous full-stack development, I solve the bottleneck between vision and technical reality. I don't just "build websites"—I engineer solutions that drive revenue, reduce latency, and scale with your growth.
+                        </p>
+                        <p class="text-slate-300 leading-relaxed">
+                            My focus lies in **Headless Architectures**, **Real-time Data Processing**, and **High-Performance UI**. I believe every line of code should serve a purpose and every pixel should enhance the journey.
+                        </p>
+                        <div class="flex gap-4 pt-4">
+                            <div class="px-4 py-2 bg-white/5 rounded-xl border border-white/5 text-center flex-1">
+                                <div class="text-2xl font-bold text-teal-400">3.5+</div>
+                                <div class="text-[10px] text-slate-500 uppercase tracking-widest">Years Dev</div>
+                            </div>
+                            <div class="px-4 py-2 bg-white/5 rounded-xl border border-white/5 text-center flex-1">
+                                <div class="text-2xl font-bold text-white">50+</div>
+                                <div class="text-[10px] text-slate-500 uppercase tracking-widest">Deployments</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="space-y-8">
+                        <div>
+                            <h4 class="text-teal-400 font-bold text-sm uppercase mb-4 tracking-widest">Core Philosophy</h4>
+                            <div class="space-y-4">
+                                <div class="flex gap-4">
+                                    <div class="text-teal-500 mt-1"><i class="fas fa-check-circle"></i></div>
+                                    <div>
+                                        <p class="font-bold text-sm">Security-First Integration</p>
+                                        <p class="text-xs text-slate-400">End-to-end encryption and robust auth patterns as standard.</p>
+                                    </div>
+                                </div>
+                                <div class="flex gap-4">
+                                    <div class="text-teal-500 mt-1"><i class="fas fa-check-circle"></i></div>
+                                    <div>
+                                        <p class="font-bold text-sm">Modular Scalability</p>
+                                        <p class="text-xs text-slate-400">Clean, component-based code designed for multi-user scaling.</p>
+                                    </div>
+                                </div>
+                                <div class="flex gap-4">
+                                    <div class="text-teal-500 mt-1"><i class="fas fa-check-circle"></i></div>
+                                    <div>
+                                        <p class="font-bold text-sm">Performance Benchmarking</p>
+                                        <p class="text-xs text-slate-400">Consistently achieving sub-200ms TTFB and 95+ Lighthouse scores.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TECH ENGINE -->
+        <section id="skills">
+            <div class="glass-card w-full">
+                <h2 class="text-4xl font-bold mb-4">The Technical Engine</h2>
+                <p class="text-slate-400 mb-12">I leverage a curated stack of modern technologies to ensure peak stability and lightning-fast delivery.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                    <div class="p-6 bg-white/5 rounded-3xl border border-white/10 hover:border-teal-400/30 transition">
+                        <i class="fas fa-layer-group text-teal-400 text-2xl mb-4"></i>
+                        <h4 class="font-bold mb-4">Frontend Layer</h4>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="tech-tag">React / Next.js</span>
+                            <span class="tech-tag">TypeScript</span>
+                            <span class="tech-tag">Tailwind CSS</span>
+                            <span class="tech-tag">Redux / Signals</span>
+                            <span class="tech-tag">Three.js / GSAP</span>
+                        </div>
+                    </div>
+                    <div class="p-6 bg-white/5 rounded-3xl border border-white/10 hover:border-sky-400/30 transition">
+                        <i class="fas fa-database text-sky-400 text-2xl mb-4"></i>
+                        <h4 class="font-bold mb-4">Backend Logic</h4>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="tech-tag">Node.js / Express</span>
+                            <span class="tech-tag">Python / FastAPI</span>
+                            <span class="tech-tag">Redis Caching</span>
+                            <span class="tech-tag">GraphQL</span>
+                            <span class="tech-tag">WebSockets</span>
+                        </div>
+                    </div>
+                    <div class="p-6 bg-white/5 rounded-3xl border border-white/10 hover:border-purple-400/30 transition">
+                        <i class="fas fa-cloud text-purple-400 text-2xl mb-4"></i>
+                        <h4 class="font-bold mb-4">Infrastructure</h4>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="tech-tag">AWS (EC2/S3)</span>
+                            <span class="tech-tag">Docker</span>
+                            <span class="tech-tag">Firebase</span>
+                            <span class="tech-tag">PostgreSQL</span>
+                            <span class="tech-tag">CI/CD Pipelines</span>
+                        </div>
+                    </div>
+                    <div class="p-6 bg-white/5 rounded-3xl border border-white/10 hover:border-pink-400/30 transition">
+                        <i class="fas fa-vial text-pink-400 text-2xl mb-4"></i>
+                        <h4 class="font-bold mb-4">QA & Tooling</h4>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="tech-tag">Jest / Cypress</span>
+                            <span class="tech-tag">Postman</span>
+                            <span class="tech-tag">Sentry</span>
+                            <span class="tech-tag">Git / Agile</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- STRATEGIC METHODOLOGY -->
+        <section id="method">
+            <div class="glass-card">
+                <h2 class="text-4xl font-bold mb-10">Strategic Development Process</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                    <div class="space-y-8">
+                        <div class="method-step">
+                            <h4 class="font-bold text-white text-lg">01. Discovery & Architecture</h4>
+                            <p class="text-sm text-slate-400">Deep dive into requirements. I define the data schemas, system architecture, and API contracts before writing a single line of UI code.</p>
+                        </div>
+                        <div class="method-step">
+                            <h4 class="font-bold text-white text-lg">02. Prototype & Core Logic</h4>
+                            <p class="text-sm text-slate-400">Building the MVP focusing on backend stability and core user loops. Ensuring the "engine" is robust before adding the "bodywork".</p>
+                        </div>
+                    </div>
+                    <div class="space-y-8">
+                        <div class="method-step">
+                            <h4 class="font-bold text-white text-lg">03. UI Refinement & Interaction</h4>
+                            <p class="text-sm text-slate-400">Implementing pixel-perfect frontend using Tailwind and modern animation libraries to ensure an engaging, responsive experience.</p>
+                        </div>
+                        <div class="method-step">
+                            <h4 class="font-bold text-white text-lg">04. Optimization & Launch</h4>
+                            <p class="text-sm text-slate-400">Rigorous load testing, SEO optimization, and security audits followed by seamless deployment to production environments.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- WORK / PROJECTS -->
+        <section id="work">
+            <div class="glass-card w-full">
+                <h2 class="text-4xl font-bold mb-10">Case Studies & Build History</h2>
+                <div class="project-grid">
+                    
+                    <a href="C:\Users\allen\Desktop\pro/index.html" target="_blank" class="project-card">
+                        <div class="flex justify-between items-start mb-6">
+                            <div class="w-12 h-12 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-400">
+                                <i class="fas fa-chart-line text-2xl"></i>
+                            </div>
+                            <span class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Enterprise Dashboard</span>
+                        </div>
+                        <h4 class="text-xl font-bold mb-2">Solar Analytics Platform</h4>
+                        <p class="text-xs text-slate-400 mb-6 leading-relaxed">A massive monitoring system for industrial solar farms. Aggregates data from 10k+ IoT sensors with sub-second latency.</p>
+                        <div class="flex flex-wrap gap-2 mb-6">
+                            <span class="text-[10px] bg-white/5 px-2 py-1 rounded">Next.js</span>
+                            <span class="text-[10px] bg-white/5 px-2 py-1 rounded">D3.js</span>
+                            <span class="text-[10px] bg-white/5 px-2 py-1 rounded">Redis</span>
+                        </div>
+                        <span class="text-teal-400 text-xs font-bold flex items-center gap-2">ANALYZE TECH STACK <i class="fas fa-arrow-right"></i></span>
+                    </a>
+
+                    <a href="C:\Users\allen\Desktop\pro/elevators.html" target="_blank" class="project-card">
+                        <div class="flex justify-between items-start mb-6">
+                            <div class="w-12 h-12 bg-sky-500/10 rounded-2xl flex items-center justify-center text-sky-400">
+                                <i class="fas fa-truck-moving text-2xl"></i>
+                            </div>
+                            <span class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Logistics API</span>
+                        </div>
+                        <h4 class="text-xl font-bold mb-2">Smart Elevator Fleet API</h4>
+                        <p class="text-xs text-slate-400 mb-6 leading-relaxed">Centralized management API for elevator maintenance and dispatch optimization. Serves 1M+ requests daily.</p>
+                        <div class="flex flex-wrap gap-2 mb-6">
+                            <span class="text-[10px] bg-white/5 px-2 py-1 rounded">Node / Express</span>
+                            <span class="text-[10px] bg-white/5 px-2 py-1 rounded">AWS Lambda</span>
+                        </div>
+                        <span class="text-sky-400 text-xs font-bold flex items-center gap-2">READ API DOCS <i class="fas fa-arrow-right"></i></span>
+                    </a>
+
+                    <a href="C:\Users\allen\Desktop\pro\a5.html" target="_blank" class="project-card">
+                        <div class="flex justify-between items-start mb-6">
+                            <div class="w-12 h-12 bg-purple-500/10 rounded-2xl flex items-center justify-center text-purple-400">
+                                <i class="fas fa-shopping-cart text-2xl"></i>
+                            </div>
+                            <span class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">SaaS Platform</span>
+                        </div>
+                        <h4 class="text-xl font-bold mb-2">Snooker Pro Management</h4>
+                        <p class="text-xs text-slate-400 mb-6 leading-relaxed">Complete club management suite. Booking engine, inventory, and integrated IoT lighting controllers.</p>
+                        <div class="flex flex-wrap gap-2 mb-6">
+                            <span class="text-[10px] bg-white/5 px-2 py-1 rounded">Stripe</span>
+                            <span class="text-[10px] bg-white/5 px-2 py-1 rounded">PostgreSQL</span>
+                        </div>
+                        <span class="text-purple-400 text-xs font-bold flex items-center gap-2">VIEW LIVE BUILD <i class="fas fa-arrow-right"></i></span>
+                    </a>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- CONTACT / CLOSING -->
+        <section id="contact">
+            <div class="glass-card">
+                <h2 class="text-4xl font-bold mb-6">Initiate Connection</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                    <div class="space-y-6">
+                        <p class="text-slate-300">Ready to build the next generation of your digital product? I'm currently accepting selective projects for the coming months.</p>
+                        
+                        <div class="space-y-4">
+                            <a href="mailto:allenkhakha@gmail.com" class="flex items-center gap-4 group cursor-pointer text-inherit no-underline">
+                                <div class="w-10 h-10 rounded-full bg-teal-500/10 flex items-center justify-center text-teal-400 group-hover:bg-teal-500 group-hover:text-white transition">
+                                    <i class="fas fa-envelope"></i>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Project Mail</p>
+                                    <p class="text-sm font-bold">allenkhakha@gmail.com</p>
+                                </div>
+                            </a>
+                            <div class="flex items-center gap-4 group cursor-pointer" onclick="copyToClip('+91 6207014944')">
+                                <div class="w-10 h-10 rounded-full bg-teal-500/10 flex items-center justify-center text-teal-400 group-hover:bg-teal-500 group-hover:text-white transition">
+                                    <i class="fab fa-whatsapp"></i>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Direct Line / WA</p>
+                                    <p class="text-sm font-bold">+91 6207014944 <i class="fas fa-copy ml-2 opacity-30 group-hover:opacity-100 transition"></i></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pt-6">
+                            <h5 class="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-4">Payment Infrastructure</h5>
+                            <div class="p-4 bg-white/5 border border-white/5 rounded-2xl flex justify-between items-center group cursor-pointer" onclick="copyToClip('6207014944@ybl')">
+                                <span class="font-mono text-teal-400">6207014944@ybl</span>
+                                <span class="text-[10px] text-slate-500 uppercase flex items-center gap-2">Copy UPI <i class="fas fa-copy"></i></span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex gap-4 pt-4">
+                            <a href="https://linkedin.com/in/allenjoseph" target="_blank" class="flex-1 bg-white/5 hover:bg-white/10 text-center py-3 rounded-xl border border-white/5 transition-all">
+                                <i class="fab fa-linkedin-in mr-2"></i> LinkedIn
+                            </a>
+                            <a href="https://wa.me/916207014944" target="_blank" class="flex-1 bg-white/5 hover:bg-white/10 text-center py-3 rounded-xl border border-white/5 transition-all">
+                                <i class="fab fa-whatsapp mr-2"></i> WhatsApp
+                            </a>
+                        </div>
+                    </div>
+                    <form class="space-y-4" onsubmit="event.preventDefault();">
+                        <input type="text" placeholder="Project / Company Name" class="w-full bg-slate-900/50 border border-white/10 rounded-2xl px-5 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-teal-500 text-white">
+                        <input type="email" placeholder="Contact Email" class="w-full bg-slate-900/50 border border-white/10 rounded-2xl px-5 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-teal-500 text-white">
+                        <textarea placeholder="Tell me about the technical challenges..." rows="4" class="w-full bg-slate-900/50 border border-white/10 rounded-2xl px-5 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-teal-500 text-white"></textarea>
+                        <button class="w-full bg-teal-500 py-4 rounded-2xl font-bold hover:bg-teal-400 transition transform hover:-translate-y-1 shadow-2xl shadow-teal-500/20">Send Technical Brief</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- CHATBOT -->
+    <div id="chatbot-container">
+        <div id="chatbot-window" class="hidden shadow-2xl">
+            <div class="p-4 bg-teal-500/20 border-b border-white/10 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-2 h-2 rounded-full bg-teal-400 animate-pulse"></div>
+                    <h3 class="text-xs font-bold text-white tracking-widest uppercase">Expert Agent 1.0</h3>
+                </div>
+                <button onclick="document.getElementById('chatbot-toggle').click()" class="text-slate-400 hover:text-white"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="chat-messages" class="flex-1 p-4 space-y-4 overflow-y-auto"></div>
+            <div class="p-3 bg-white/5 border-t border-white/10 flex space-x-2">
+                <input type="text" id="chat-input" placeholder="Query tech stack..." class="w-full px-4 py-3 text-xs rounded-xl bg-slate-800 border border-white/10 focus:outline-none focus:ring-1 focus:ring-teal-500 text-white">
+                <button id="chat-send" class="bg-teal-500 text-white w-10 h-10 rounded-xl flex items-center justify-center hover:bg-teal-400 transition shrink-0">
+                    <i class="fas fa-paper-plane text-xs"></i>
+                </button>
+            </div>
+        </div>
+        <button id="chatbot-toggle">
+            <i id="chat-icon-open" class="fas fa-comment-medical text-2xl"></i>
+            <i id="chat-icon-close" class="fas fa-times text-2xl hidden"></i>
+        </button>
+    </div>
+
+    <script>
+        let scene, camera, renderer, character, clock, scrollRatio = 0;
+        let particles, objects = [];
+        const loader = document.getElementById('loader');
+        const progress = document.getElementById('progress-fill');
+
+        window.onload = () => {
+            initThree();
+            animate();
+            setupInteractions();
+            
+            let val = 0;
+            const timer = setInterval(() => {
+                val += Math.random() * 20;
+                if(val >= 100) {
+                    val = 100;
+                    clearInterval(timer);
+                    setTimeout(() => {
+                        loader.style.opacity = '0';
+                        setTimeout(() => loader.remove(), 1000);
+                    }, 500);
+                }
+                progress.style.width = val + '%';
+            }, 100);
+        };
+
+        function initThree() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x020617);
+            scene.fog = new THREE.FogExp2(0x020617, 0.015);
+
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1500);
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+            clock = new THREE.Clock();
+
+            scene.add(new THREE.AmbientLight(0x4040ff, 0.4));
+            const p1 = new THREE.PointLight(0x14b8a6, 2, 50);
+            p1.position.set(10, 20, 10);
+            scene.add(p1);
+
+            const grid = new THREE.GridHelper(1000, 100, 0x14b8a6, 0x0f172a);
+            grid.position.y = -8;
+            scene.add(grid);
+
+            character = new THREE.Group();
+            const hullGeo = new THREE.BoxGeometry(2, 0.5, 3.5);
+            const hullMat = new THREE.MeshStandardMaterial({ 
+                color: 0x14b8a6, 
+                emissive: 0x14b8a6,
+                emissiveIntensity: 0.5,
+                metalness: 0.9,
+                roughness: 0.1
+            });
+            character.add(new THREE.Mesh(hullGeo, hullMat));
+            
+            const light = new THREE.PointLight(0x00ffff, 8, 20);
+            light.position.y = 2;
+            character.add(light);
+            scene.add(character);
+
+            for(let i=0; i<80; i++) {
+                const h = 20 + Math.random() * 60;
+                const geo = new THREE.BoxGeometry(10, h, 10);
+                const mat = new THREE.MeshStandardMaterial({ color: 0x0a1020 });
+                const tower = new THREE.Mesh(geo, mat);
+                const side = i % 2 === 0 ? 1 : -1;
+                tower.position.set(side * (30 + Math.random() * 30), h/2 - 8, i * -25);
+                scene.add(tower);
+                
+                const spireGeo = new THREE.BoxGeometry(0.3, h, 0.3);
+                const spireMat = new THREE.MeshBasicMaterial({ color: 0x14b8a6 });
+                const spire = new THREE.Mesh(spireGeo, spireMat);
+                spire.position.set(side > 0 ? -5.1 : 5.1, 0, 5.1);
+                tower.add(spire);
+            }
+
+            const starGeo = new THREE.BufferGeometry();
+            const starPos = new Float32Array(8000 * 3);
+            for(let i=0; i<8000*3; i++) starPos[i] = (Math.random() - 0.5) * 1200;
+            starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+            particles = new THREE.Points(starGeo, new THREE.PointsMaterial({ size: 0.4, color: 0xffffff, transparent: true, opacity: 0.6 }));
+            scene.add(particles);
+
+            camera.position.set(0, 12, 20);
+        }
+
+        function setupInteractions() {
+            window.addEventListener('scroll', () => {
+                scrollRatio = window.scrollY / (document.body.scrollHeight - window.innerHeight);
+                updateActiveSections();
+            });
+
+            const win = document.getElementById('chatbot-window');
+            const toggle = document.getElementById('chatbot-toggle');
+            const openIcon = document.getElementById('chat-icon-open');
+            const closeIcon = document.getElementById('chat-icon-close');
+            const input = document.getElementById('chat-input');
+            const sendBtn = document.getElementById('chat-send');
+            const msgs = document.getElementById('chat-messages');
+
+            toggle.onclick = () => {
+                win.classList.toggle('hidden');
+                openIcon.classList.toggle('hidden');
+                closeIcon.classList.toggle('hidden');
+            };
+
+            function addMsg(text, sender) {
+                const div = document.createElement('div');
+                div.className = `p-3 rounded-2xl text-[11px] max-w-[85%] leading-relaxed ${sender === 'user' ? 'bg-teal-500 text-white ml-auto rounded-tr-none' : 'bg-white/10 text-slate-200 mr-auto rounded-tl-none border border-white/5'}`;
+                div.innerHTML = text;
+                msgs.appendChild(div);
+                msgs.scrollTop = msgs.scrollHeight;
+            }
+
+            sendBtn.onclick = () => {
+                if(!input.value.trim()) return;
+                const val = input.value.toLowerCase();
+                addMsg(input.value, 'user');
+                input.value = '';
+
+                let r = "I'm a digital agent specializing in Allen's workflow. Try asking about <b>stack</b>, <b>methodology</b>, or <b>projects</b>.";
+                if(val.includes('stack') || val.includes('tech')) r = "Allen utilizes a high-end stack: <b>Next.js, TypeScript, Node.js, and AWS</b> for robust scaling.";
+                if(val.includes('process') || val.includes('method')) r = "His methodology follows 4 stages: Discovery, Logic Build, Interaction Design, and Launch Optimization.";
+                if(val.includes('cost') || val.includes('price')) r = "Project costs vary based on complexity. Reach out via email for a technical scope and quote.";
+                
+                setTimeout(() => addMsg(r, 'bot'), 600);
+            };
+
+            input.onkeypress = (e) => { if(e.key === 'Enter') sendBtn.click(); };
+            setTimeout(() => addMsg("Professional data layer loaded. How can I assist with your technical inquiry?", 'bot'), 2500);
+        }
+
+        function updateActiveSections() {
+            const sections = document.querySelectorAll('section');
+            let current = "";
+            sections.forEach(sec => {
+                const rect = sec.getBoundingClientRect();
+                if(rect.top < window.innerHeight * 0.5 && rect.bottom > window.innerHeight * 0.5) {
+                    sec.classList.add('active');
+                    current = sec.getAttribute('id');
+                } else {
+                    sec.classList.remove('active');
+                }
+            });
+            document.querySelectorAll('.nav-item').forEach(link => {
+                link.classList.toggle('active', link.getAttribute('href') === `#${current}`);
+            });
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const time = clock.getElapsedTime();
+
+            const targetZ = -scrollRatio * 600;
+            character.position.z = THREE.MathUtils.lerp(character.position.z, targetZ, 0.05);
+            character.position.y = Math.sin(time * 1.5) * 0.8;
+            character.rotation.z = Math.sin(time) * 0.08;
+            
+            camera.position.z = character.position.z + 18;
+            camera.position.x = Math.sin(time * 0.15) * 5;
+            camera.position.y = 12 + Math.cos(time * 0.2) * 2;
+            camera.lookAt(0, 0, character.position.z - 15);
+
+            particles.rotation.y += 0.0006;
+            renderer.render(scene, camera);
+        }
+
+        function copyToClip(text) {
+            const el = document.createElement('textarea');
+            el.value = text;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            
+            const toast = document.getElementById('copy-toast');
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        window.onresize = () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        };
+    </script>
+</body>
+</html>
