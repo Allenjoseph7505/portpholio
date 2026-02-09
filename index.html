@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stanley Industries Group - Pioneering Power & Mobility Solutions</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* General Body and Font Styles */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+            color: #343a40;
+        }
+        
+        /* Header scroll effect */
+        .header-transparent {
+            background-color: rgba(13, 76, 76, 0.2); /* Transparent Teal */
+            backdrop-filter: blur(5px);
+        }
+        .header-scrolled {
+            background-color: #0f766e; /* Solid Teal */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Consistent Section Heading Style */
+        .section-heading {
+            border-bottom: 4px solid #14b8a6; /* Brighter Teal for accent */
+            padding-bottom: 0.75rem;
+            margin-bottom: 2.5rem;
+            display: inline-block;
+        }
+
+        /* Card Style with Enhanced Hover Effect */
+        .card {
+            background-color: #fff;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
+            padding: 2.5rem;
+            margin-bottom: 1.5rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 12px 24px rgba(13, 148, 136, 0.15); /* Teal shadow */
+        }
+        
+        /* Hero Section Styling */
+        .bg-hero {
+            background: linear-gradient(rgba(10, 20, 40, 0.8), rgba(10, 20, 40, 0.8)), url('https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExNm0zcGk4NWxmNTg5NnB1OWE0a25mejJsdDg3enlnODB5czU1djY3ZCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l1J9KU2KmTwzptMD6/giphy.gif');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: white;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+        }
+
+        /* Button Styles */
+        .btn {
+            display: inline-block;
+            font-weight: 600;
+            text-align: center;
+            vertical-align: middle;
+            cursor: pointer;
+            user-select: none;
+            border: 2px solid transparent;
+            padding: 0.8rem 2.2rem;
+            font-size: 1.05rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background-color: #0d9488; /* Teal */
+            color: white;
+            box-shadow: 0 3px 6px rgba(13, 148, 136, 0.3);
+        }
+
+        .btn-primary:hover {
+            background-color: #0f766e; /* Darker Teal */
+            transform: scale(1.05);
+            box-shadow: 0 5px 10px rgba(13, 148, 136, 0.4);
+        }
+        
+        .btn-secondary {
+            background-color: transparent;
+            color: white;
+            border-color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: white;
+            color: #0f766e; /* Darker Teal */
+            transform: scale(1.05);
+        }
+        
+        /* Chatbot Styling */
+        #chatbot-container {
+            position: fixed; bottom: 20px; right: 20px; z-index: 1000;
+            background-color: #fff; border: 1px solid #ccc; border-radius: 0.75rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); width: 370px; height: 500px;
+            display: flex; flex-direction: column; overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform: scale(0.5) translateY(100px); opacity: 0; pointer-events: none;
+        }
+        #chatbot-container.open { transform: scale(1) translateY(0); opacity: 1; pointer-events: auto; }
+        #chat-header { background-color: #0d9488; color: white; padding: 1rem; font-weight: bold; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        #chat-history { flex-grow: 1; padding: 1rem; overflow-y: auto; background-color: #f0f2f5; display: flex; flex-direction: column; gap: 0.75rem; }
+        .chat-message { padding: 0.7rem 1.1rem; border-radius: 1.2rem; max-width: 85%; word-wrap: break-word; line-height: 1.5; }
+        .chat-message.user { background-color: #0d9488; color: white; align-self: flex-end; border-bottom-right-radius: 0.25rem; }
+        .chat-message.bot { background-color: #e9ecef; color: #333; align-self: flex-start; border-bottom-left-radius: 0.25rem; }
+        #chat-input-container { display: flex; padding: 1rem; border-top: 1px solid #e2e8f0; background-color: #fff; }
+        #chat-input { flex-grow: 1; padding: 0.75rem; border: 1px solid #ccc; border-radius: 0.5rem; margin-right: 0.5rem; }
+        #send-button { background-color: #0d9488; color: white; padding: 0.75rem 1.2rem; border-radius: 0.5rem; cursor: pointer; border: none; transition: background-color 0.3s ease; }
+        #send-button:hover { background-color: #0f766e; }
+        #chat-toggle-button {
+            position: fixed; bottom: 20px; right: 20px; z-index: 1001;
+            background-color: #0d9488; color: white; border: none; border-radius: 50%;
+            width: 60px; height: 60px; font-size: 1.8rem; display: flex;
+            align-items: center; justify-content: center; cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25); transition: all 0.3s ease;
+        }
+        #chat-toggle-button:hover { background-color: #0f766e; transform: scale(1.1) rotate(15deg); }
+        
+        /* Animation */
+        .fade-in-section {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .fade-in-section.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Partner Logo Style */
+        .partner-logo {
+            filter: grayscale(100%);
+            opacity: 0.7;
+            transition: all 0.3s ease;
+        }
+        .partner-logo:hover {
+            filter: grayscale(0%);
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        /* Gradient Text for Logo */
+        .text-gradient {
+            background: linear-gradient(45deg, #2dd4bf, #f59e0b, #fbbf24);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+            transition: filter 0.3s ease;
+        }
+        .group:hover .text-gradient {
+            filter: brightness(1.15);
+        }
+
+        /* --- STYLES for Map and Project Showcase --- */
+        
+        /* India Map Styles */
+        #map-section {
+            background-color: #f0fdfa; /* Light Teal background */
+        }
+        #india-map .land {
+            fill: #ccfbf1; /* Teal-100 */
+            stroke: #5eead4; /* Teal-300 */
+            stroke-width: 1;
+            filter: drop-shadow(3px 5px 2px rgb(0 0 0 / 0.1));
+        }
+        .location-dot {
+            fill: #f59e0b; /* Amber-500 for accent */
+        }
+        .map-label {
+            font-family: 'Inter', sans-serif;
+            font-size: 18px; /* Adjusted for visibility */
+            fill: #1f2937; /* gray-800 */
+            font-weight: 600;
+        }
+        .map-title-vertical {
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+        }
+        .map-title-vertical h3 {
+             color: #115e59; /* Teal-800 */
+        }
+
+        /* Project Showcase Styles */
+        .project-card {
+            position: relative;
+            overflow: hidden;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
+            aspect-ratio: 4 / 3; /* Maintain aspect ratio */
+        }
+        .project-card .project-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+        .project-card:hover .project-image {
+            transform: scale(1.1);
+        }
+        .project-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0) 70%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 1.5rem;
+            color: white;
+        }
+        .project-card:hover .project-overlay {
+            opacity: 1;
+        }
+        .project-overlay h3 {
+            transform: translateY(20px);
+            transition: transform 0.4s ease;
+        }
+        .project-card:hover .project-overlay h3 {
+            transform: translateY(0);
+        }
+        .project-overlay p {
+            transform: translateY(20px);
+            transition: transform 0.4s ease 0.1s;
+        }
+        .project-card:hover .project-overlay p {
+            transform: translateY(0);
+        }
+
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Header -->
+    <header id="main-header" class="text-white p-4 sticky top-0 z-50 transition-all duration-300 header-transparent">
+        <div class="container mx-auto flex flex-wrap justify-between items-center">
+            <!-- NEW LOGO AND BRAND NAME -->
+            <a href="index.html" class="flex items-center space-x-3 rtl:space-x-reverse rounded-md px-3 py-2 transition duration-300 group">
+                <svg class="h-9 w-9 text-white transition-colors duration-300 group-hover:text-amber-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 2.5l7.79 4.5v9L12 20.5l-7.79-4.5v-9L12 2.5z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.25 8.75c0-1.5-1-2.5-2.75-2.5S9.75 7.25 9.75 8.75c0 1.125.75 1.875 1.875 2.125L12 11.25l.375.125c1.125.25 1.875 1 1.875 2.125 0 1.5-1 2.5-2.75 2.5S8.75 16.75 8.75 15.25" />
+                </svg>
+                <span class="text-3xl font-bold tracking-wider text-gradient">STANLEY</span>
+            </a>
+            <nav class="mt-4 md:mt-0">
+                <ul class="flex flex-wrap space-x-2 md:space-x-4">
+                    <li><a href="#home" class="hover:text-amber-300 rounded-md px-3 py-2 transition duration-300">Home</a></li>
+                    <li><a href="#about" class="hover:text-amber-300 rounded-md px-3 py-2 transition duration-300">About</a></li>
+                    <li><a href="solar.html" class="hover:text-amber-300 rounded-md px-3 py-2 transition duration-300">Solar Solutions</a></li>
+                    <li><a href="elevators.html" class="hover:text-amber-300 rounded-md px-3 py-2 transition duration-300">Elevator Services</a></li>
+                    <li><a href="#projects" class="hover:text-amber-300 rounded-md px-3 py-2 transition duration-300">Projects</a></li>
+                    <li><a href="#contact" class="hover:text-amber-300 rounded-md px-3 py-2 transition duration-300">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="home" class="bg-hero h-screen min-h-[700px] flex items-center justify-center text-center p-4">
+        <div class="relative z-10">
+            <h1 class="text-5xl md:text-7xl font-extrabold mb-4 leading-tight">Pioneering Power & Mobility</h1>
+            <p class="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">Your trusted partner for sustainable Solar Energy and advanced Vertical Mobility Solutions.</p>
+            <div class="flex justify-center space-x-4">
+                <a href="#contact" class="btn btn-primary text-lg">Request a Proposal</a>
+                <a href="#services" class="btn btn-secondary text-lg">Explore Services</a>
+            </div>
+            <h2 class="text-6xl md:text-8xl font-bold text-white opacity-25 mt-12 select-none pointer-events-none">Global Energy Grid</h2>
+        </div>
+    </section>
+    
+    <!-- Stats Counter Section -->
+     <section class="bg-teal-900 text-white py-12">
+        <div class="container mx-auto">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+                <div>
+                    <h3 class="text-4xl font-bold text-amber-400" data-target="25">0+</h3>
+                    <p class="text-lg">Years in Elevator Industry</p>
+                </div>
+                <div>
+                    <h3 class="text-4xl font-bold text-amber-400" data-target="100">0+</h3>
+                    <p class="text-lg">MW Solar Power Installed</p>
+                </div>
+                <div>
+                    <h3 class="text-4xl font-bold text-amber-400" data-target="15">0+</h3>
+                    <p class="text-lg">Cities with Our Presence</p>
+                </div>
+                <div>
+                    <h3 class="text-4xl font-bold text-amber-400">24/7</h3>
+                    <p class="text-lg">Customer Support</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="py-20 px-4 fade-in-section">
+        <div class="container mx-auto">
+            <h2 class="text-4xl font-bold text-center mb-12 section-heading" style="border-color: #0d9488;">About Stanley Industries Group</h2>
+            <div class="max-w-4xl mx-auto text-center text-lg text-gray-700 mb-16">
+                <p>Stanley Industries Group is a diversified company with two core divisions dedicated to shaping a better future. <strong>STANLEY ENERGY POWER INDIA PVT. LTD.</strong> is our premier Solar EPC division, providing innovative clean energy solutions. Our mobility division, <strong>STANLEY ELEVATOR COMPANY</strong>, brings 25 years of specialized experience in vertical transportation, with an unwavering commitment to safety, quality, and robust performance.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-10 max-w-5xl mx-auto">
+                <div class="text-center p-6 bg-white rounded-lg shadow-md transition-all duration-300 hover:shadow-xl hover:scale-105">
+                    <i class="fas fa-bullseye text-4xl text-teal-600 mb-4"></i>
+                    <h3 class="text-2xl font-bold mb-3">Our Mission</h3>
+                    <p class="text-gray-600">To deliver high-quality, sustainable, and innovative solutions in energy and mobility that empower communities and protect our planet for future generations.</p>
+                </div>
+                <div class="text-center p-6 bg-white rounded-lg shadow-md transition-all duration-300 hover:shadow-xl hover:scale-105">
+                    <i class="fas fa-eye text-4xl text-teal-600 mb-4"></i>
+                    <h3 class="text-2xl font-bold mb-3">Our Vision</h3>
+                    <p class="text-gray-600">To be a global leader in the power and mobility sectors, recognized for our technological excellence, customer-centric approach, and dedication to a sustainable world.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Services Section -->
+    <section id="services" class="py-20 bg-slate-50 px-4 fade-in-section">
+        <div class="container mx-auto">
+            <h2 class="text-4xl font-bold text-center mb-12 section-heading" style="border-color: #0d9488;">Our Core Services</h2>
+            <!-- Solar Services -->
+            <div id="solar-solutions" class="mb-16 scroll-mt-20">
+                <h3 class="text-3xl font-semibold mb-8 text-center"><i class="fas fa-solar-panel text-teal-600 mr-3"></i>Solar Energy Solutions</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="card !p-0 overflow-hidden"><img src="https://gepsenergy.com/assets/images/blog/single/On-Grid-System.webp" alt="On-Grid Solar Systems" class="w-full h-48 object-cover"><div class="p-6 flex-grow flex flex-col"><h4 class="text-xl font-bold mb-2">On-Grid Rooftop Solar</h4><p class="text-gray-600 flex-grow">Seamlessly integrate with the public grid to reduce your electricity bills and earn credits for surplus power.</p></div></div>
+                    <div class="card !p-0 overflow-hidden"><img src="https://omsolar.in/wp-content/uploads/2024/12/image-2.png" alt="Off-Grid Solar Systems" class="w-full h-48 object-cover"><div class="p-6 flex-grow flex flex-col"><h4 class="text-xl font-bold mb-2">Off-Grid Solar Solutions</h4><p class="text-gray-600 flex-grow">Achieve complete energy independence with our reliable battery-backed systems, perfect for remote locations.</p></div></div>
+                    <div class="card !p-0 overflow-hidden"><img src="https://ornatesolar.com/wp-content/uploads/2022/07/Hybrid-Solar-System.webp" alt="Hybrid Solar Systems" class="w-full h-48 object-cover"><div class="p-6 flex-grow flex flex-col"><h4 class="text-xl font-bold mb-2">Hybrid Solar Systems</h4><p class="text-gray-600 flex-grow">Get the best of both worlds—grid connectivity with battery backup to ensure uninterrupted power.</p></div></div>
+                </div>
+            </div>
+            <!-- Elevator Services -->
+            <div id="elevator-services" class="scroll-mt-20">
+                <h3 class="text-3xl font-semibold mb-8 text-center"><i class="fas fa-elevator text-teal-600 mr-3"></i>Elevator & Mobility Services</h3>
+                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div class="card !p-0 overflow-hidden"><img src="https://images.squarespace-cdn.com/content/v1/57eb44916b8f5be752c94f84/1544914244724-18VPDO59GZGWL6YODDMZ/Cape+Town+Hetherwick+01.jpg?format=1000w" alt="Passenger Elevators" class="w-full h-48 object-cover"><div class="p-6 flex-grow flex flex-col"><h4 class="text-xl font-bold mb-2">Passenger Elevators</h4><p class="text-gray-600 flex-grow">Smooth, safe, and stylish elevators for residential and commercial buildings.</p></div></div>
+                    <div class="card !p-0 overflow-hidden"><img src="https://5.imimg.com/data5/YT/RP/LJ/SELLER-9844375/hospital-lift-500x500.jpg" alt="Hospital Lifts" class="w-full h-48 object-cover"><div class="p-6 flex-grow flex flex-col"><h4 class="text-xl font-bold mb-2">Hospital & Stretcher Lifts</h4><p class="text-gray-600 flex-grow">Spacious and robust lifts designed for the unique demands of healthcare facilities.</p></div></div>
+                    <div class="card !p-0 overflow-hidden"><img src="https://technoelevators.com/wp-content/uploads/2024/10/goods.jpg" alt="Goods Elevators" class="w-full h-48 object-cover"><div class="p-6 flex-grow flex flex-col"><h4 class="text-xl font-bold mb-2">Goods & Freight Elevators</h4><p class="text-gray-600 flex-grow">Heavy-duty vertical transport solutions for industrial and warehouse applications.</p></div></div>
+                    <div class="card !p-0 overflow-hidden"><img src="https://5.imimg.com/data5/SELLER/Default/2022/9/UN/MS/QS/24889724/elevator-maintenance-service-500x500.jpg" alt="Elevator Modernization" class="w-full h-48 object-cover"><div class="p-6 flex-grow flex flex-col"><h4 class="text-xl font-bold mb-2">Modernization & AMC</h4><p class="text-gray-600 flex-grow">Upgrade existing elevators with the latest technology for improved safety, efficiency, and aesthetics.</p></div></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Choose Us Section -->
+    <section id="why-choose-us" class="py-20 px-4 fade-in-section">
+        <div class="container mx-auto">
+            <h2 class="text-4xl font-bold text-center mb-12 section-heading" style="border-color: #0d9488;">Why Choose Stanley?</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div class="text-center p-6"><div class="flex items-center justify-center h-16 w-16 rounded-full bg-teal-100 text-teal-600 mx-auto mb-4"><i class="fas fa-award text-3xl"></i></div><h3 class="text-xl font-bold mb-2">Unmatched Quality</h3><p class="text-gray-600">We use premium materials and adhere to the highest international standards in all our projects.</p></div>
+                <div class="text-center p-6"><div class="flex items-center justify-center h-16 w-16 rounded-full bg-teal-100 text-teal-600 mx-auto mb-4"><i class="fas fa-shield-halved text-3xl"></i></div><h3 class="text-xl font-bold mb-2">Safety First</h3><p class="text-gray-600">Our unwavering commitment to safety protocols ensures peace of mind for all our clients and end-users.</p></div>
+                <div class="text-center p-6"><div class="flex items-center justify-center h-16 w-16 rounded-full bg-teal-100 text-teal-600 mx-auto mb-4"><i class="fas fa-lightbulb text-3xl"></i></div><h3 class="text-xl font-bold mb-2">Innovative Solutions</h3><p class="text-gray-600">We leverage the latest technology to deliver efficient, smart, and future-ready energy and mobility systems.</p></div>
+                <div class="text-center p-6"><div class="flex items-center justify-center h-16 w-16 rounded-full bg-teal-100 text-teal-600 mx-auto mb-4"><i class="fas fa-headset text-3xl"></i></div><h3 class="text-xl font-bold mb-2">Customer Centricity</h3><p class="text-gray-600">From consultation to post-installation support, we provide dedicated service tailored to your needs.</p></div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Our Process Section -->
+    <section id="our-process" class="py-20 bg-slate-50 px-4 fade-in-section">
+        <div class="container mx-auto">
+            <h2 class="text-4xl font-bold text-center mb-16 section-heading" style="border-color: #0d9488;">Our Simple 4-Step Process</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 text-center">
+                <div class="relative px-4">
+                    <div class="flex items-center justify-center h-20 w-20 rounded-full bg-white text-teal-600 mx-auto mb-4 shadow-lg text-3xl font-bold">1</div>
+                    <h3 class="text-xl font-bold mb-2">Consultation</h3>
+                    <p class="text-gray-600">We start with a detailed consultation to understand your unique requirements and site conditions.</p>
+                </div>
+                <div class="relative px-4">
+                    <div class="flex items-center justify-center h-20 w-20 rounded-full bg-white text-teal-600 mx-auto mb-4 shadow-lg text-3xl font-bold">2</div>
+                    <h3 class="text-xl font-bold mb-2">Design & Proposal</h3>
+                    <p class="text-gray-600">Our experts design a custom solution and provide a transparent, detailed proposal.</p>
+                </div>
+                <div class="relative px-4">
+                    <div class="flex items-center justify-center h-20 w-20 rounded-full bg-white text-teal-600 mx-auto mb-4 shadow-lg text-3xl font-bold">3</div>
+                    <h3 class="text-xl font-bold mb-2">Installation</h3>
+                    <p class="text-gray-600">Our certified engineers execute the installation with precision, adhering to all safety standards.</p>
+                </div>
+                <div class="relative px-4">
+                    <div class="flex items-center justify-center h-20 w-20 rounded-full bg-white text-teal-600 mx-auto mb-4 shadow-lg text-3xl font-bold">4</div>
+                    <h3 class="text-xl font-bold mb-2">Support & O&M</h3>
+                    <p class="text-gray-600">We provide ongoing support and maintenance to ensure optimal performance and longevity.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Enhanced Project Showcase -->
+    <section id="projects" class="py-20 px-4 fade-in-section">
+        <div class="container mx-auto">
+            <h2 class="text-4xl font-bold text-center mb-12 section-heading" style="border-color: #0d9488;">Project Showcase</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Project 1 -->
+                <div class="project-card">
+                    <img src="https://lp-cms-production.imgix.net/2025-04/shutterstock1263280048-crop.jpg?auto=format,compress&q=72&w=1440&h=810&fit=crop" alt="Rooftop Solar Project" class="project-image">
+                    <div class="project-overlay">
+                        <h3 class="text-2xl font-bold">Commercial Rooftop Solar</h3>
+                        <p class="text-base text-gray-300"><i class="fas fa-map-marker-alt mr-2"></i>Jaipur, Rajasthan</p>
+                    </div>
+                </div>
+                <!-- Project 2 -->
+                <div class="project-card">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Mumbai_Skyline_at_Night.jpg/960px-Mumbai_Skyline_at_Night.jpg" alt="High-Rise Elevator Project" class="project-image">
+                     <div class="project-overlay">
+                        <h3 class="text-2xl font-bold">High-Rise Elevators</h3>
+                        <p class="text-base text-gray-300"><i class="fas fa-map-marker-alt mr-2"></i>Mumbai, Maharashtra</p>
+                    </div>
+                </div>
+                <!-- Project 3 -->
+                <div class="project-card">
+                    <img src="https://cdn-ilajkdd.nitrocdn.com/CFCJXhfiSzTqAgTvTONhpNQKyruYmLIw/assets/images/optimized/rev-5087c10/www.unseenera.com/wp-content/uploads/2024/06/Top-10-Industrial-Automation-Companies-in-Pune.webp" alt="Industrial Solar Project" class="project-image">
+                     <div class="project-overlay">
+                        <h3 class="text-2xl font-bold">Industrial Solar Plant</h3>
+                        <p class="text-base text-gray-300"><i class="fas fa-map-marker-alt mr-2"></i>Pune, Maharashtra</p>
+                    </div>
+                </div>
+                <!-- Project 4 -->
+                <div class="project-card">
+                    <img src="https://publichealth.tulane.edu/wp-content/uploads/sites/3/2022/11/hospital-staff.jpg" alt="Hospital Lifts Project" class="project-image">
+                     <div class="project-overlay">
+                        <h3 class="text-2xl font-bold">Specialized Hospital Lifts</h3>
+                        <p class="text-base text-gray-300"><i class="fas fa-map-marker-alt mr-2"></i>Delhi, NCR</p>
+                    </div>
+                </div>
+                <!-- Project 5 -->
+                <div class="project-card">
+                     <img src="https://gpjs3bucket.s3.amazonaws.com/wp-content/uploads/2018/06/26144045/gpjnews-rdc-MK-taxes-aux-rebelles-4_Web.jpg" alt="Off-Grid System Project" class="project-image">
+                     <div class="project-overlay">
+                        <h3 class="text-2xl font-bold">Remote Off-Grid System</h3>
+                        <p class="text-base text-gray-300"><i class="fas fa-map-marker-alt mr-2"></i>Kerala Backwaters</p>
+                    </div>
+                </div>
+                <!-- Project 6 -->
+                <div class="project-card">
+                    <img src="https://www.datocms-assets.com/38028/1660154352-reliability-engineer-inspecting-machine.jpg?auto=format" alt="Elevator Modernization Project" class="project-image">
+                     <div class="project-overlay">
+                        <h3 class="text-2xl font-bold">Elevator Modernization</h3>
+                        <p class="text-base text-gray-300"><i class="fas fa-map-marker-alt mr-2"></i>Bangalore, Karnataka</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Partners & Certifications Section -->
+    <section id="partners" class="py-20 bg-slate-50 px-4 fade-in-section">
+        <div class="container mx-auto">
+            <h2 class="text-4xl font-bold text-center mb-12 section-heading" style="border-color: #0d9488;">Our Technology Partners & Certifications</h2>
+            <div class="flex flex-wrap justify-center items-center gap-x-12 gap-y-8">
+                <img src="https://placehold.co/150x60/cccccc/888888?text=ISO+9001" alt="ISO 9001 Certification" class="partner-logo h-12">
+                <img src="https://placehold.co/150x60/cccccc/888888?text=Partner+A" alt="Technology Partner A" class="partner-logo h-12">
+                <img src="https://placehold.co/150x60/cccccc/888888?text=MNRE" alt="MNRE Certified" class="partner-logo h-12">
+                <img src="https://placehold.co/150x60/cccccc/888888?text=Partner+B" alt="Technology Partner B" class="partner-logo h-12">
+                <img src="https://placehold.co/150x60/cccccc/888888?text=CE+Mark" alt="CE Marking" class="partner-logo h-12">
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Testimonials Section -->
+    <section id="testimonials" class="py-20 px-4 fade-in-section">
+        <div class="container mx-auto max-w-5xl">
+            <h2 class="text-4xl font-bold text-center mb-12 section-heading" style="border-color: #0d9488;">What Our Clients Say</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                <div class="card text-center"><p class="text-gray-600 italic mb-4 flex-grow">"Stanley's solar division was exceptional. Their professionalism and the performance of our new on-grid system have exceeded all expectations. Our energy costs have dropped significantly."</p><p class="font-bold text-lg">R. Verma</p><p class="text-gray-500">Director, ABC Textiles</p></div>
+                <div class="card text-center"><p class="text-gray-600 italic mb-4 flex-grow">"The new hospital elevators installed by Stanley Elevator Company are a testament to quality and safety. They are reliable, smooth, and were installed with minimal disruption to our operations."</p><p class="font-bold text-lg">Dr. S. Menon</p><p class="text-gray-500">Chief Administrator, City Hospital</p></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- India Presence Map Section -->
+    <section id="map-section" class="py-20 fade-in-section">
+        <div class="container mx-auto flex flex-col md:flex-row items-center justify-center gap-8 px-4">
+            <div class="w-full md:w-auto md:flex-1">
+                <svg id="india-map" viewBox="0 0 1024 1162" xmlns="http://www.w3.org/2000/svg">
+                    <path class="land" d="M939 553l-22 17-2-12-14-4-19 1-13 11-13 7-10-1-10-8-2-12-19-15-2-10 11-10 14-3 12-10-2-10-15-1-12 5-6 10-26 13-17 1h-11l-3-8-12-3-12 1-7-5-5-10-14-1-11 5-13-1-11-5-11 3-1-7-8-3-10-2-13 4-10 1-5-3-17-10-1-9 1-13-11-20-4-15 11-8-3-12-8-8-5-13-1-7 1-11 10-1-6-15-8-14-1-8 6-6 4-7-3-13-1-11-2-14 3-13-1-13-8-15-8-2-10-13-1-6-6-12-12-13 4-11-2-19-1-13-1-12 1-10 5-23 1-8-3-12-10-6-1-8-3-7-1-6-5-10-3-13-6-12-11-10-3-12-2-14-5-10-3-13-1-9-4-10-1-11 1-10-2-18-6-16-6-13-3-13-4-16-1-14 4-23 9-10 1-12 5-16 12-14 5-12 4-22 10-16 11-10 1-14-3-13-12-14-14-14-13-11-3-18-1-10-4-13-9-10-1-8-1-14 1-13-1-10-5-17-9-15-2-14-1-10 1-11 4-11 8-10 5-11 1-11-2-12-6-11-2-14-1-12 2-11 1-11-1-11-2-10-3-13-6-11-4-12-5-10-2-10-2-12-4-11-3-12-1-12-1-12-1-13-2-12-3-11-3-12-2-13-1-13-1-13-1-12-1-12-1-11-1-11-2-10-3-9-3-9-3-9-4-8-4-8-4-8-4-8-4-8-4-8-5-7-5-7-5-7-5-7-5-7-5-7-5-6-5-6-5-6-6-5-6-5-6-6-5-6-5-6-6-5-6-5-6-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-slog-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-6-5-..." />
+                    <!-- Dots and Labels -->
+                    <circle class="location-dot" cx="300" cy="270" r="8"></circle><text x="200" y="275" class="map-label">Ludhiana</text>
+                    <circle class="location-dot" cx="320" cy="280" r="8"></circle><text x="335" y="285" class="map-label">Chandigarh</text>
+                    <circle class="location-dot" cx="290" cy="340" r="8"></circle><text x="195" y="345" class="map-label">Gurgaon</text>
+                    <circle class="location-dot" cx="330" cy="350" r="8"></circle><text x="345" y="355" class="map-label">Noida</text>
+                    <circle class="location-dot" cx="250" cy="380" r="8"></circle><text x="175" y="385" class="map-label">Jaipur</text>
+                    <circle class="location-dot" cx="350" cy="480" r="8"></circle><text x="365" y="485" class="map-label">Bhopal</text>
+                    <circle class="location-dot" cx="680" cy="490" r="8"></circle><text x="695" y="495" class="map-label">Kolkata</text>
+                    <circle class="location-dot" cx="220" cy="620" r="8"></circle><text x="140" y="625" class="map-label">Mumbai</text>
+                    <circle class="location-dot" cx="360" cy="680" r="8"></circle><text x="375" y="685" class="map-label">Hyderabad</text>
+                    <circle class="location-dot" cx="260" cy="650" r="8"></circle><text x="195" y="655" class="map-label">Pune</text>
+                    <circle class="location-dot" cx="300" cy="800" r="8"></circle><text x="315" y="805" class="map-label">Bangalore</text>
+                    <circle class="location-dot" cx="400" cy="820" r="8"></circle><text x="415" y="825" class="map-label">Chennai</text>
+                    <circle class="location-dot" cx="320" cy="900" r="8"></circle><text x="250" y="905" class="map-label">Kochi</text>
+                    <circle class="location-dot" cx="550" cy="400" r="8"></circle><text x="565" y="405" class="map-label">Patna (HQ)</text>
+                </svg>
+            </div>
+            <div class="map-title-vertical">
+                <h3 class="text-2xl font-bold tracking-widest">Our India Presence</h3>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-20 px-4 bg-gray-900 text-white fade-in-section">
+        <div class="container mx-auto">
+            <h2 class="text-4xl font-bold text-center mb-12 section-heading" style="border-color: #fff;">Get in Touch</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+                <div>
+                    <h3 class="text-3xl font-semibold mb-6">Contact Information</h3>
+                    <div class="space-y-6">
+                        <div class="card !bg-gray-800 text-white"><h4 class="text-xl font-bold mb-2">India Office (HQ)</h4><p><i class="fas fa-map-marker-alt w-6 text-center mr-2"></i>Beside Aaryan Dental Clinic, Bhooth Nath Road, Near Diamond Hospital, Patna, Bihar - 800026</p><p class="mt-2"><i class="fas fa-phone w-6 text-center mr-2"></i>+91 9045561102, +91 7903687527</p><p class="mt-2"><i class="fas fa-envelope w-6 text-center mr-2"></i>stanleyindustries24@gmail.com</p></div>
+                        <div class="card !bg-gray-800 text-white"><h4 class="text-xl font-bold mb-2">Overseas Office (USA)</h4><p><i class="fas fa-map-marker-alt w-6 text-center mr-2"></i>9 Henry Clay Drive, Merrimack, NH 03054, United States</p><p class="mt-2"><i class="fas fa-phone w-6 text-center mr-2"></i>+1-800-258-7016</p><p class="mt-2"><i class="fas fa-globe w-6 text-center mr-2"></i><a href="#" class="hover:underline">www.stanleyindustries.com</a></p></div>
+                    </div>
+                </div>
+                 <div>
+                    <h3 class="text-3xl font-semibold mb-6">Send Us a Message</h3>
+                    <div class="card !bg-gray-800 p-8">
+                        <form action="#" method="POST" class="space-y-4">
+                            <div><label for="name" class="sr-only">Name</label><input type="text" name="name" id="name" placeholder="Your Name" class="w-full bg-gray-700 text-white rounded-md p-3 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-teal-500"></div>
+                            <div><label for="email" class="sr-only">Email</label><input type="email" name="email" id="email" placeholder="Your Email" class="w-full bg-gray-700 text-white rounded-md p-3 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-teal-500"></div>
+                             <div><label for="service" class="sr-only">Service of Interest</label><select id="service" name="service" class="w-full bg-gray-700 text-white rounded-md p-3 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-teal-500"><option>Select a Service...</option><option>Solar Solutions</option><option>Elevator Services</option><option>General Inquiry</option></select></div>
+                            <div><label for="message" class="sr-only">Message</label><textarea name="message" id="message" rows="4" placeholder="Your Message" class="w-full bg-gray-700 text-white rounded-md p-3 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-teal-500"></textarea></div>
+                            <div><button type="submit" class="btn btn-primary w-full">Send Message</button></div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-gray-400 pt-12 pb-8 px-4">
+        <div class="container mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div class="md:col-span-1">
+                <h3 class="text-2xl font-bold text-white mb-2">Stanley Industries</h3>
+                <p>Leading the charge in sustainable energy and innovative mobility solutions.</p>
+                <div class="flex space-x-4 mt-4">
+                    <a href="#" class="hover:text-white text-xl"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="hover:text-white text-xl"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="hover:text-white text-xl"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+            <div>
+                <h4 class="font-bold text-white mb-4">Quick Links</h4>
+                <ul>
+                    <li class="mb-2"><a href="#about" class="hover:text-white">About Us</a></li>
+                    <li class="mb-2"><a href="#services" class="hover:text-white">Services</a></li>
+                    <li class="mb-2"><a href="#projects" class="hover:text-white">Projects</a></li>
+                    <li class="mb-2"><a href="#contact" class="hover:text-white">Contact</a></li>
+                      <li class="mb-2"><a href="privacy.html" class="hover:text-white">Privacy Policy</a></li>
+                </ul>
+            </div>
+            <div>
+                 <h4 class="font-bold text-white mb-4">Our Divisions</h4>
+                <ul>
+                    <li class="mb-2"><a href="solar.html" class="hover:text-white">Solar Solutions</a></li>
+                    <li class="mb-2"><a href="elevators.html" class="hover:text-white">Elevator Services</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-bold text-white mb-4">Newsletter</h4>
+                <p class="mb-2">Stay updated with our latest projects and news.</p>
+                 <div class="flex mt-2">
+                    <input type="email" placeholder="Enter your email" class="w-full bg-gray-700 text-white rounded-l-md p-2 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-teal-500">
+                    <button class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-r-md">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="container mx-auto text-center border-t border-gray-700 mt-8 pt-6">
+            <p>&copy; 2025 Stanley Industries Group. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Chatbot -->
+    <div id="chatbot-container">
+        <div id="chat-header" onclick="toggleChat()">
+            <span>Stanley Assistant</span>
+            <span id="chat-close-button" style="font-weight:bold; cursor:pointer;">&times;</span>
+        </div>
+        <div id="chat-history">
+             <div class="chat-message bot">Hello! I'm the Stanley Assistant. How can I help you today? You can ask me about solar, elevators, or how to contact us.</div>
+        </div>
+        <div id="chat-input-container">
+            <input type="text" id="chat-input" placeholder="Ask a question..." onkeypress="if(event.key === 'Enter') sendMessage()">
+            <button id="send-button" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+    <button id="chat-toggle-button" onclick="toggleChat()">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.837 8.837 0 01-4.43-1.232l-2.133.711a1 1 0 01-1.15-1.15l.71-2.133A8.837 8.837 0 012 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9a1 1 0 100-2 1 1 0 000 2zm4 0a1 1 0 100-2 1 1 0 000 2zm2 2a1 1 0 11-2 0 1 1 0 012 0z" clip-rule="evenodd" />
+        </svg>
+    </button>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const header = document.getElementById('main-header');
+            const chatbotContainer = document.getElementById('chatbot-container');
+            const chatHistory = document.getElementById('chat-history');
+            const chatInput = document.getElementById('chat-input');
+            const chatToggleButton = document.getElementById('chat-toggle-button');
+            const sections = document.querySelectorAll('.fade-in-section');
+            const counters = document.querySelectorAll('[data-target]');
+            
+            // --- Header Scroll Effect ---
+            const handleScroll = () => {
+                if (window.scrollY > 50) {
+                    header.classList.add('header-scrolled');
+                    header.classList.remove('header-transparent');
+                } else {
+                    header.classList.remove('header-scrolled');
+                    header.classList.add('header-transparent');
+                }
+            };
+            window.addEventListener('scroll', handleScroll);
+
+            // --- Animated Counter ---
+            const animateCounters = (entry) => {
+                if (entry.isIntersecting) {
+                    counters.forEach(counter => {
+                        const target = +counter.getAttribute('data-target');
+                        counter.innerText = '0+';
+
+                        const updateCounter = () => {
+                            const current = +counter.innerText.replace('+', '');
+                            const increment = target / 200; // Speed of animation
+
+                            if (current < target) {
+                                counter.innerText = Math.ceil(current + increment) + '+';
+                                setTimeout(updateCounter, 10);
+                            } else {
+                                counter.innerText = target + '+';
+                            }
+                        };
+                        updateCounter();
+                    });
+                    // Stop observing after animation starts
+                    counterObserver.unobserve(entry.target);
+                }
+            };
+
+            const counterObserver = new IntersectionObserver((entries) => {
+                entries.forEach(animateCounters);
+            }, { threshold: 0.5 });
+            
+            const statsSection = document.querySelector('.bg-teal-900');
+            if(statsSection) {
+                 counterObserver.observe(statsSection);
+            }
+            
+            // --- Chatbot Logic ---
+            window.toggleChat = function() {
+                const isOpen = chatbotContainer.classList.toggle('open');
+                chatToggleButton.style.transform = isOpen ? 'scale(0)' : 'scale(1)';
+                if (isOpen) {
+                   chatHistory.scrollTop = chatHistory.scrollHeight;
+                }
+            }
+
+            window.sendMessage = function() {
+                const userMessage = chatInput.value.trim();
+                if (userMessage === '') return;
+                appendMessage('user', userMessage);
+                chatInput.value = '';
+                chatHistory.scrollTop = chatHistory.scrollHeight;
+                const typingIndicator = appendMessage('bot', '...');
+                
+                const botResponse = getBotResponse(userMessage);
+                setTimeout(() => {
+                    updateBotMessage(typingIndicator, botResponse);
+                    chatHistory.scrollTop = chatHistory.scrollHeight;
+                }, 500); // Simulate bot thinking
+            }
+
+            function appendMessage(sender, message) {
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('chat-message', sender);
+                messageElement.innerHTML = message;
+                chatHistory.appendChild(messageElement);
+                return messageElement;
+            }
+            
+            function updateBotMessage(element, message) {
+                element.innerHTML = message;
+            }
+
+            function getBotResponse(userMessage) {
+                const msg = userMessage.toLowerCase();
+                
+                if (msg.includes('hello') || msg.includes('hi')) {
+                    return "Hello there! How can I assist you with our Solar or Elevator solutions today?";
+                } else if (msg.includes('solar') || msg.includes('sun') || msg.includes('panel')) {
+                    return "We are a premier Solar EPC company! We offer On-Grid, Off-Grid, and Hybrid systems. You can find more details on our <a href='solar.html' class='text-teal-600 underline'>Solar Solutions page</a>. What specifically are you interested in?";
+                } else if (msg.includes('elevator') || msg.includes('lift')) {
+                     return "With 25 years of experience, we manufacture and modernize a wide range of elevators including Passenger, Hospital, and Goods lifts. Check out our <a href='elevators.html' class='text-teal-600 underline'>Elevator Services page</a> for more info. Do you have a specific type in mind?";
+                } else if (msg.includes('contact') || msg.includes('phone') || msg.includes('email') || msg.includes('address')) {
+                    return "You can reach our India HQ at +91 9045561102 or email stanleyindustries24@gmail.com. For a detailed query, I recommend using the <a href='#contact' onclick='toggleChat()' class='text-teal-600 underline'>contact form</a> on our page.";
+                } else if (msg.includes('thank')) {
+                    return "You're welcome! Is there anything else I can help you with?";
+                } else if (msg.includes('bye')) {
+                    return "Goodbye! Have a great day.";
+                } else {
+                    return "I can help with general questions about our Solar and Elevator services. For a detailed proposal or specific technical questions, please <a href='#contact' onclick='toggleChat()' class='text-teal-600 underline'>contact our team directly</a>. They'll be happy to assist you!";
+                }
+            }
+            
+            // --- Intersection Observer for Fade-in Animations ---
+            const sectionObserver = new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            sections.forEach(section => {
+                sectionObserver.observe(section);
+            });
+
+            // Initial setup
+            chatbotContainer.classList.remove('open');
+            chatToggleButton.style.display = 'flex';
+        });
+    </script>
+</body>
+</html>

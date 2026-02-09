@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elevator Services - Stanley Industries Group</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <style>
+        /* General Body and Font Styles */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+            color: #343a40;
+        }
+
+        /* Hero Section Styling */
+        #hero {
+            height: 100vh;
+            background-image: url('https://elements-resized.envatousercontent.com/elements-video-cover-images/files/d98c8d54-4891-49cd-97ae-16668549698b/inline_image_preview.jpg?w=500&cf_fit=cover&q=85&format=auto&s=6c9a8f57fa9e6a6e75761c96add9b4e9870fe07d4175416a17bbb664170df064');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+
+        /* Consistent Section Heading Style */
+        .section-heading {
+            border-bottom: 3px solid #007bff;
+            padding-bottom: 0.75rem;
+            margin-bottom: 2rem;
+            display: inline-block;
+        }
+
+        /* Card Style with Hover Effect */
+        .card {
+            background-color: #fff;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+        }
+        
+        /* Feature List Styling */
+        .feature-list {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .feature-list li {
+            position: relative;
+            padding-left: 1.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-list li::before {
+            content: '\f00c'; /* Font Awesome check icon */
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            color: #007bff;
+            position: absolute;
+            left: 0;
+            top: 4px;
+        }
+
+        /* Table Styling for Data */
+        .dimensions-table-container {
+            overflow-x: auto;
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .dimensions-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 650px;
+        }
+
+        .dimensions-table th, .dimensions-table td {
+            border: 1px solid #dee2e6;
+            padding: 1rem;
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        .dimensions-table th {
+            background-color: #e9ecef;
+            font-weight: 600;
+            color: #495057;
+            text-transform: uppercase;
+            font-size: 0.875rem;
+        }
+
+        .dimensions-table tbody tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        .dimensions-table tbody tr:hover {
+            background-color: #e2e8f0;
+            cursor: pointer;
+        }
+
+        /* Translucent Dropdown Style */
+        .dropdown-translucent {
+            background-color: rgba(31, 41, 55, 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        /* Back to top button */
+        #backToTopBtn {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            right: 30px;
+            z-index: 99;
+            border: none;
+            outline: none;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 18px;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        #backToTopBtn:hover {
+            background-color: #0056b3;
+            transform: scale(1.1);
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 2rem;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 0.75rem;
+            position: relative;
+            animation: slide-down 0.5s ease-out;
+        }
+
+        @keyframes slide-down {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* Filter button styling */
+        .filter-btn {
+            transition: all 0.3s ease;
+        }
+        .filter-btn.active {
+            background-color: #007bff;
+            color: white;
+            box-shadow: 0 4px 14px rgba(0, 123, 255, 0.39);
+        }
+
+        /* Scroll Animation Styling */
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .animate-on-scroll.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Header -->
+    <header class="bg-gray-900/80 backdrop-blur-sm text-white p-4 shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto flex flex-wrap justify-between items-center">
+            <a href="index.html" class="text-3xl font-bold rounded-md px-3 py-2 transition duration-300 hover:text-blue-400">Stanley Industries</a>
+            <nav class="mt-4 md:mt-0 flex items-center space-x-2 md:space-x-4">
+                <ul class="flex flex-wrap space-x-2 md:space-x-4">
+                    <li><a href="index.html" class="hover:text-blue-400 rounded-md px-3 py-2 transition duration-300">Home</a></li>
+                    <li><a href="#about" class="hover:text-blue-400 rounded-md px-3 py-2 transition duration-300">About Us</a></li>
+                    <li><a href="solar.html" class="hover:text-blue-400 rounded-md px-3 py-2 transition duration-300">Solar Solutions</a></li>
+                    <li class="relative">
+                        <a href="#elevator-services" id="elevator-menu-button" class="hover:text-blue-400 rounded-md px-3 py-2 transition duration-300 font-semibold text-blue-300 flex items-center">
+                            Elevator Services
+                            <svg class="w-4 h-4 ml-1" id="elevator-menu-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </a>
+                        <div id="elevator-menu" class="absolute hidden dropdown-translucent text-white mt-1 rounded-md shadow-lg py-2 w-64 z-50">
+                            <a href="#passenger-elevators-section" class="block px-4 py-2 hover:bg-gray-700/50 transition duration-150 rounded-md">Passenger Elevators</a>
+                            <a href="#capsule-elevators-section" class="block px-4 py-2 hover:bg-gray-700/50 transition duration-150 rounded-md">Capsule Elevators</a>
+                            <a href="#hospital-elevators-section" class="block px-4 py-2 hover:bg-gray-700/50 transition duration-150 rounded-md">Hospital Elevators</a>
+                            <a href="#goods-elevators-section" class="block px-4 py-2 hover:bg-gray-700/50 transition duration-150 rounded-md">Goods Elevators</a>
+                            <a href="#dumbwaiters-section" class="block px-4 py-2 hover:bg-gray-700/50 transition duration-150 rounded-md">Dumbwaiters / Food Lifts</a>
+                            <a href="#mrl-elevator-section" class="block px-4 py-2 hover:bg-gray-700/50 transition duration-150 rounded-md">MRL Gearless Elevator</a>
+                            <a href="#home-elevators-section" class="block px-4 py-2 hover:bg-gray-700/50 transition duration-150 rounded-md">Home/Bungalows Elevator</a>
+                            <a href="#hydraulic-car-elevator-section" class="block px-4 py-2 hover:bg-gray-700/50 transition duration-150 rounded-md">Hydraulic & Car Elevators</a>
+                            <a href="#escalators-stairlifts-section" class="block px-4 py-2 hover:bg-gray-700/50 transition duration-150 rounded-md">Escalators & Stairlifts</a>
+                            <a href="#components-section" class="block px-4 py-2 hover:bg-gray-700/50 transition duration-150 rounded-md">Components</a>
+                        </div>
+                    </li>
+                    <li><a href="#contact" class="hover:text-blue-400 rounded-md px-3 py-2 transition duration-300">Contact</a></li>
+                </ul>
+                <button id="quoteBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition duration-300 ml-4 hidden md:inline-block">Request a Quote</button>
+            </nav>
+        </div>
+    </header>
+    
+    <!-- Hero Section -->
+    <section id="hero" class="relative flex items-center justify-center text-white">
+        <div class="absolute inset-0 bg-black/60"></div>
+        <div class="relative z-10 text-center p-4 animate-on-scroll">
+            <h1 class="text-5xl md:text-7xl font-extrabold mb-4 leading-tight">Elevating Your World</h1>
+            <p class="text-lg md:text-2xl mb-8 max-w-3xl mx-auto">Providing safe, reliable, and innovative vertical transportation solutions for every need.</p>
+            <a href="#elevator-services" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-md transition duration-300 text-lg">Explore Our Services</a>
+        </div>
+    </section>
+
+    <!-- About Us Section -->
+    <section id="about" class="py-20 px-4 bg-white">
+        <div class="container mx-auto">
+            <div class="text-center mb-12 animate-on-scroll">
+                 <h2 class="text-4xl font-bold section-heading">About Stanley Industries</h2>
+                 <p class="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">Over a decade of excellence in elevator design, manufacturing, and maintenance.</p>
+            </div>
+            <div class="flex flex-col md:flex-row items-center gap-12 animate-on-scroll">
+                <div class="md:w-1/2">
+                    <img src="https://images.pexels.com/photos/7551631/pexels-photo-7551631.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" alt="Our Team" class="rounded-lg shadow-xl w-full h-auto object-cover">
+                </div>
+                <div class="md:w-1/2">
+                    <h3 class="text-3xl font-semibold text-gray-800 mb-4">Our Commitment to Quality</h3>
+                    <p class="text-gray-600 mb-4">At Stanley Industries, we are driven by a passion for innovation and a commitment to safety. Our journey began with a simple mission: to provide world-class elevator solutions that are both technologically advanced and remarkably reliable. We believe in building lasting relationships with our clients, grounded in trust and exceptional service.</p>
+                    <p class="text-gray-600">Our team of experienced engineers and technicians works tirelessly to ensure that every project, from residential lifts to large-scale commercial installations, meets the highest standards of quality and safety regulations.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Elevator Section -->
+    <section id="elevator-services" class="py-20 px-4">
+        <div class="container mx-auto">
+            <div class="text-center mb-12 animate-on-scroll">
+                <h2 class="text-4xl font-bold section-heading">Our Elevator & Mobility Services</h2>
+            </div>
+            <!-- Filter Buttons -->
+            <div id="filter-container" class="flex flex-wrap justify-center gap-2 md:gap-4 mb-12 animate-on-scroll">
+                <button class="filter-btn active bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-full" data-filter="all">All</button>
+                <button class="filter-btn bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-full" data-filter="commercial">Commercial</button>
+                <button class="filter-btn bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-full" data-filter="residential">Residential</button>
+                <button class="filter-btn bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-full" data-filter="specialized">Specialized</button>
+            </div>
+            
+            <div class="space-y-8" id="elevator-grid">
+                <!-- Each elevator service card is a potential scroll target -->
+                <div class="card elevator-section animate-on-scroll" id="passenger-elevators-section" data-category="commercial">
+                    <h3 class="text-3xl font-semibold mb-6 text-blue-700">Passenger Elevators</h3>
+                    <div class="md:flex md:space-x-8 items-start">
+                        <div class="md:w-1/3 flex-shrink-0">
+                            <img src="https://www.shutterstock.com/image-illustration/open-elevator-doors-polished-office-260nw-2455085005.jpg" alt="Passenger Elevator" class="w-full h-96 object-cover rounded-md bg-gray-200" onerror="this.onerror=null;this.src='https://placehold.co/800x600/a0a0a0/ffffff?text=Image+Not+Available';">
+                            <div class="flex space-x-2 mt-2">
+                                <img src="https://www.vacuumelevators.com/wp-content/uploads/2024/05/image.png" alt="Passenger Elevator Cabin" class="w-1/2 h-52 object-cover rounded-md border" onerror="this.onerror=null;this.src='https://placehold.co/400x300/a0a0a0/ffffff?text=Image';">
+                                <img src="https://archistudent.net/wp-content/uploads/2010/08/passenger-lift.jpg" alt="Passenger Elevator Panel" class="w-1/2 h-52 object-cover rounded-md border" onerror="this.onerror=null;this.src='https://placehold.co/400x300/a0a0a0/ffffff?text=Image';">
+                            </div>
+                        </div>
+                        <div class="md:w-2/3 mt-6 md:mt-0">
+                            <p>Our Passenger Elevators are engineered to meet the transportation demands of any building, efficiently handling diverse traffic conditions with robust performance. Renowned for their fine quality, these elevators deliver maximum lifting power with minimum effort, ensuring a superior combination of flexibility and performance. They are available with a choice of manual or fully automatic doors, including Centre Opening and Telescopic options for enhanced convenience and accessibility.</p>
+                            <h4 class="text-2xl font-semibold mt-6 mb-4">Key Benefits</h4>
+                            <ul class="feature-list">
+                                <li><strong>Smooth & Quiet Travel:</strong> Advanced controls provide a jerk-less journey with low power consumption.</li>
+                                <li><strong>High-Density Solutions:</strong> Multiple elevators can be grouped to significantly reduce passenger waiting times in busy buildings.</li>
+                                <li><strong>Safety as Standard:</strong> Engineered with 100% safety compliance, ensuring peace of mind.</li>
+                                <li><strong>Flexible Design:</strong> We offer a wide range of sizes and capabilities to perfectly match your building's requirements.</li>
+                            </ul>
+                            <h4 class="text-2xl font-semibold mt-6 mb-4">Specifications (Manual Doors)</h4>
+                            <div class="dimensions-table-container">
+                                <table class="dimensions-table">
+                                    <thead><tr><th rowspan="2">LOAD (PERSONS)</th><th rowspan="2">WEIGHT (KG)</th><th colspan="2">LIFT WELL</th><th colspan="2">CAR INSIDE</th><th>ENTRANCE</th><th colspan="3">MACHINE ROOM</th></tr><tr><th>WIDTH (A)</th><th>DEPTH (B)</th><th>WIDTH (C)</th><th>DEPTH (D)</th><th>WIDTH (E)</th><th>WIDTH (F)</th><th>DEPTH (G)</th><th>HEIGHT (H)</th></tr></thead>
+                                    <tbody><tr><td>4</td><td>272</td><td>1800</td><td>1250</td><td>1100</td><td>700</td><td>700</td><td>3000</td><td>3000</td><td>2500</td></tr><tr><td>5</td><td>340</td><td>1800</td><td>1300</td><td>1100</td><td>850</td><td>750</td><td>3000</td><td>3200</td><td>2500</td></tr><tr><td>6</td><td>408</td><td>1670</td><td>1370</td><td>1100</td><td>1000</td><td>750</td><td>3000</td><td>3500</td><td>2500</td></tr><tr><td>8</td><td>544</td><td>1800</td><td>1500</td><td>1300</td><td>1100</td><td>750</td><td>3200</td><td>3500</td><td>2500</td></tr><tr><td>10</td><td>680</td><td>1850</td><td>1800</td><td>1350</td><td>1300</td><td>1000</td><td>3500</td><td>4000</td><td>2500</td></tr><tr><td>13</td><td>884</td><td>2500</td><td>1500</td><td>2000</td><td>1100</td><td>1000</td><td>4000</td><td>4200</td><td>2500</td></tr></tbody>
+                                </table>
+                            </div>
+                            <h4 class="text-2xl font-semibold mt-6 mb-4">Specifications (Auto Doors)</h4>
+                            <div class="dimensions-table-container">
+                                <table class="dimensions-table">
+                                    <thead><tr><th>LOAD (PERSONS)</th><th>WEIGHT (KG)</th><th>LIFT WELL (W)</th><th>LIFT WELL (D)</th><th>CAR (W)</th><th>CAR (D)</th><th>ENTRANCE</th><th>PIT</th><th>OVERHEAD</th></tr></thead>
+                                    <tbody><tr><td>6</td><td>408</td><td>1900</td><td>1650</td><td>1100</td><td>1000</td><td>800</td><td>1600</td><td>4800</td></tr><tr><td>8</td><td>544</td><td>1900</td><td>1900</td><td>1300</td><td>1100</td><td>800</td><td>1600</td><td>4800</td></tr><tr><td>10</td><td>680</td><td>1900</td><td>2000</td><td>1350</td><td>1300</td><td>800</td><td>1600</td><td>4800</td></tr><tr><td>13</td><td>884</td><td>2500</td><td>1900</td><td>2000</td><td>1100</td><td>1000</td><td>1600</td><td>4800</td></tr><tr><td>16</td><td>1088</td><td>2500</td><td>2000</td><td>2000</td><td>1300</td><td>1000</td><td>1600</td><td>4800</td></tr><tr><td>20</td><td>1360</td><td>2500</td><td>2300</td><td>2000</td><td>1550</td><td>1000</td><td>1600</td><td>4800</td></tr></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card elevator-section animate-on-scroll" id="capsule-elevators-section" data-category="commercial">
+                    <h3 class="text-3xl font-semibold mb-6 text-blue-700">Capsule Elevators</h3>
+                    <div class="md:flex md:space-x-8 items-start">
+                        <div class="md:w-1/3 flex-shrink-0">
+                            <img src="https://images.jdmagicbox.com/quickquotes/images_main/plain-stainless-steel-capsule-elevator-lift-2r4zhnm0.jpg" alt="Capsule Elevator" class="w-full h-96 object-cover rounded-md bg-gray-200" onerror="this.onerror=null;this.src='https://placehold.co/800x600/909090/ffffff?text=Image+Not+Available';">
+                             <div class="flex space-x-2 mt-2">
+                                <img src="https://3.imimg.com/data3/DB/QY/MY-11201598/3-500x500.jpeg" alt="Capsule Elevator Exterior" class="w-1/2 h-52 object-cover rounded-md border" onerror="this.onerror=null;this.src='https://placehold.co/400x300/909090/ffffff?text=Image';">
+                                <img src="https://vrselevators.com/images/technical-layout/capsule-elevator-technical-diagram.jpg" alt="Capsule Elevator in Lobby" class="w-1/2 h-52 object-cover rounded-md border" onerror="this.onerror=null;this.src='https://placehold.co/400x300/909090/ffffff?text=Image';">
+                            </div>
+                        </div>
+                        <div class="md:w-2/3 mt-6 md:mt-0">
+                            <p class="mb-4">Our glass capsule elevators are artistically designed to be a stunning architectural highlight in offices, shopping malls, multiplexes, and other prestigious buildings. Installable on the exterior face of a building or within a lobby, they provide panoramic views and dramatically enhance the aesthetic appeal of any structure.</p>
+                            <p>Utilizing state-of-the-art technology, these elevators offer an unparalleled travel experience. We provide a range of shapes including 3-sided, 5-sided, round, and octagonal glass designs. The beauty is further enhanced with options for fully glass doors, bottom-lit marble floors, and exquisitely designed roofs. Depending on site requirements, these elevators can be powered by either traction or hydraulic systems.</p>
+                            <h4 class="text-2xl font-semibold mt-6 mb-4">Features & Customization</h4>
+                            <div class="grid md:grid-cols-2 gap-6">
+                                <div><h5 class="text-xl font-semibold mb-2">Car Finishes</h5><ul class="feature-list"><li>Glass with MS Powder Coated Frame</li><li>Glass with Stainless Steel Hairline Finish</li><li>Glass with Designer Etched Steel</li></ul></div>
+                                <div><h5 class="text-xl font-semibold mb-2">Door Finishes</h5><ul class="feature-list"><li>Fully Framed Glass Auto Doors</li><li>Stainless Steel Hairline Finish</li><li>Titanium Gold Designed Finish</li></ul></div>
+                                <div><h5 class="text-xl font-semibold mb-2">Control & Display</h5><ul class="feature-list"><li>Surface Mount or Touch Buttons</li><li>Digital LED, Dot Matrix, or LCD Displays</li><li>Infrared Door Detectors for Safety</li></ul></div>
+                            </div>
+                            <h4 class="text-2xl font-semibold mt-6 mb-4">Capsule Elevator Specifications</h4>
+                            <div class="dimensions-table-container">
+                                <table class="dimensions-table">
+                                   <thead><tr><th rowspan="2">LOAD (PERSONS)</th><th rowspan="2">WEIGHT (KG)</th><th colspan="2">LIFT WELL</th><th colspan="2">CAR INSIDE</th><th rowspan="2">ENTRANCE (E)</th><th colspan="2">MACHINE ROOM</th><th colspan="2">PIT (K)</th><th colspan="2">OVERHEAD (M)</th></tr><tr><th>WIDTH (A)</th><th>DEPTH (B)</th><th>WIDTH (C)</th><th>DEPTH (D)</th><th>WIDTH (F)</th><th>DEPTH (G)</th><th>≤ 1.5 m/s</th><th>≤ 2.5 m/s</th><th>≤ 1.5 m/s</th><th>≤ 2.5 m/s</th></tr></thead>
+                                    <tbody><tr><td>8</td><td>544</td><td>1900</td><td>1900</td><td>1300</td><td>1100</td><td>800</td><td>3200</td><td>3500</td><td>1600</td><td>2600</td><td>4800</td><td>6700</td></tr><tr><td>10</td><td>680</td><td>1900</td><td>2000</td><td>1350</td><td>1300</td><td>800</td><td>3500</td><td>4000</td><td>1600</td><td>2600</td><td>4800</td><td>6700</td></tr><tr><td>13</td><td>884</td><td>2500</td><td>1900</td><td>2000</td><td>1100</td><td>1000</td><td>4000</td><td>4200</td><td>1600</td><td>2600</td><td>4800</td><td>6700</td></tr><tr><td>16</td><td>1088</td><td>2500</td><td>2000</td><td>2000</td><td>1300</td><td>1000</td><td>4500</td><td>4500</td><td>1600</td><td>2600</td><td>4800</td><td>6700</td></tr><tr><td>20</td><td>1360</td><td>2500</td><td>2300</td><td>2000</td><td>1550</td><td>1000</td><td>5000</td><td>5000</td><td>1600</td><td>2600</td><td>5700</td><td>5700</td></tr></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card elevator-section animate-on-scroll" id="hospital-elevators-section" data-category="specialized">
+                    <h3 class="text-3xl font-semibold mb-6 text-blue-700">Hospital Elevators</h3>
+                    <div class="md:flex md:space-x-8 items-start">
+                        <div class="md:w-1/3 flex-shrink-0">
+                            <img src="https://eceelevators.com/blogs/wp-content/uploads/2023/10/Hospital-Elevator-new.jpeg" alt="Hospital Elevator" class="w-full h-96 object-cover rounded-md bg-gray-200" onerror="this.onerror=null;this.src='https://placehold.co/800x600/808080/ffffff?text=Image+Not+Available';">
+                             <div class="flex space-x-2 mt-2">
+                                <img src="https://i.pinimg.com/736x/db/16/25/db1625cf8efd7e287900d092497ff8cd.jpg" alt="Hospital Elevator Interior" class="w-1/2 h-52 object-cover rounded-md border" onerror="this.onerror=null;this.src='https://placehold.co/400x300/808080/ffffff?text=Image';">
+                                <img src="https://5.imimg.com/data5/ME/WR/MY-9456465/hospital-elevators-500x500.png" alt="Hospital Bed Lift" class="w-1/2 h-52 object-cover rounded-md border" onerror="this.onerror=null;this.src='https://placehold.co/400x300/808080/ffffff?text=Image';">
+                            </div>
+                        </div>
+                        <div class="md:w-2/3 mt-6 md:mt-0">
+                            <p>Stanley Bed Elevators are purpose-designed solutions for hospitals, nursing homes, and other medical facilities. Understanding the critical demands of healthcare environments, these elevators are renowned for their robust performance, reliability, and steadfast operation. We offer a wide range of car dimensions to accommodate hospital beds, stretchers, and bulky medical equipment, ensuring safe and efficient transport for patients and staff alike.</p>
+                             <h4 class="text-2xl font-semibold mt-6 mb-4">Specialized Features</h4>
+                            <ul class="feature-list">
+                                <li><strong>Stable & Smooth Ride:</strong> Engineered for minimal vibration and jerk-less travel, crucial for patient comfort.</li>
+                                <li><strong>Accurate Leveling:</strong> Precise open and shut controls ensure perfect alignment with the floor for safe and easy movement of beds and wheelchairs.</li>
+                                <li><strong>Hygienic and Durable Finishes:</strong> Car interiors and panels use materials that are easy to clean and withstand the rigors of a hospital environment.</li>
+                                <li><strong>Priority Control:</strong> Emergency features and priority call functions are available for critical situations.</li>
+                            </ul>
+                            <h4 class="text-2xl font-semibold mt-6 mb-4">Specifications</h4>
+                            <div class="dimensions-table-container">
+                                <table class="dimensions-table">
+                                    <thead><tr><th rowspan="2">CAPACITY (PERSONS)</th><th rowspan="2">WEIGHT (KG)</th><th colspan="4">AUTO CENTRE OPENING DOOR</th><th colspan="4">AUTO TELESCOPIC DOOR</th></tr><tr><th>SHAFT (W)</th><th>SHAFT (D)</th><th>CAR (W)</th><th>CAR (D)</th><th>SHAFT (W)</th><th>SHAFT (D)</th><th>CAR (W)</th><th>CAR (D)</th></tr></thead>
+                                    <tbody><tr><td>15</td><td>1020</td><td>1900</td><td>3000</td><td>1000</td><td>2400</td><td>1700</td><td>3000</td><td>1000</td><td>2400</td></tr><tr><td>20</td><td>1360</td><td>2300</td><td>3000</td><td>1300</td><td>2400</td><td>1950</td><td>3000</td><td>1300</td><td>2400</td></tr><tr><td>26</td><td>1768</td><td>2600</td><td>3000</td><td>1600</td><td>2400</td><td>2100</td><td>3000</td><td>1600</td><td>2400</td></tr></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card elevator-section animate-on-scroll" id="goods-elevators-section" data-category="specialized">
+                    <h3 class="text-3xl font-semibold mb-6 text-blue-700">Goods Elevators</h3>
+                    <div class="md:flex md:space-x-8 items-start">
+                        <div class="md:w-1/3 flex-shrink-0">
+                            <img src="https://www.kdselevator.com/images/goods-elevators-banner.jpg" alt="Goods Elevator" class="w-full h-96 object-cover rounded-md bg-gray-200" onerror="this.onerror=null;this.src='https://placehold.co/800x600/707070/ffffff?text=Image+Not+Available';">
+                            <div class="flex space-x-2 mt-2">
+                                <img src="https://5.imimg.com/data5/SELLER/Default/2024/4/407394482/FY/UF/IR/59760986/freight-elevator.jpg" alt="Goods Elevator Interior" class="w-1/2 h-52 object-cover rounded-md border" onerror="this.onerror=null;this.src='https://placehold.co/400x300/707070/ffffff?text=Image';">
+                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTXZT1nX11HVU__exlHtyoy-Wh2ovqU8Q5ZIQ&s" alt="Goods Elevator at Loading Dock" class="w-1/2 h-52 object-cover rounded-md border" onerror="this.onerror=null;this.src='https://placehold.co/400x300/707070/ffffff?text=Image';">
+                            </div>
+                        </div>
+                        <div class="md:w-2/3 mt-6 md:mt-0">
+                            <p>When you need to move freight, you need a purpose-built elevator that can handle the job. Our freight elevators are engineered for power, durability, and reliability, capable of carrying heavy loads from 500 to 5000 kg. They feature a powerful hoisting machine and a rugged construction designed to cope with rough treatment, ensuring longevity and consistent performance in demanding industrial and commercial environments.</p>
+                             <h4 class="text-2xl font-semibold mt-6 mb-4">Designed for Freight</h4>
+                            <ul class="feature-list">
+                                <li><strong>Heavy-Duty Capacity:</strong> Built to transport heavy and bulky goods with ease.</li>
+                                <li><strong>Smooth Ride:</strong> Ensures even fragile loads are handled safely without damage.</li>
+                                <li><strong>Precise Leveling & Wide Doors:</strong> Guarantees easy loading and unloading with forklifts and pallet jacks.</li>
+                                <li><strong>Customizable:</strong> We can supply freight elevators with dust-proof equipment and other specialized features based on customer requirements.</li>
+                            </ul>
+                            <h4 class="text-2xl font-semibold mt-6 mb-4">Specifications</h4>
+                            <div class="dimensions-table-container">
+                                <table class="dimensions-table">
+                                    <thead><tr><th>LOAD (KG)</th><th>LIFT WELL (W)</th><th>LIFT WELL (D)</th><th>CAR (W)</th><th>CAR (D)</th><th>ENTRANCE (W)</th><th>PIT</th><th>OVERHEAD</th></tr></thead>
+                                    <tbody><tr><td>500</td><td>1900</td><td>1600</td><td>1100</td><td>1200</td><td>750</td><td>1600</td><td>4800</td></tr><tr><td>1000</td><td>2300</td><td>2100</td><td>1400</td><td>1800</td><td>1000</td><td>1600</td><td>4800</td></tr><tr><td>1500</td><td>2600</td><td>2300</td><td>1700</td><td>2000</td><td>1250</td><td>1600</td><td>4800</td></tr><tr><td>2000</td><td>2600</td><td>2800</td><td>1700</td><td>2500</td><td>1500</td><td>1600</td><td>4800</td></tr><tr><td>2500</td><td>2900</td><td>2800</td><td>2000</td><td>2500</td><td>1500</td><td>1600</td><td>4800</td></tr><tr><td>3000</td><td>2900</td><td>3300</td><td>2000</td><td>3000</td><td>2000</td><td>1600</td><td>4800</td></tr><tr><td>4000</td><td>3400</td><td>3300</td><td>2500</td><td>3000</td><td>2000</td><td>1600</td><td>4800</td></tr></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card elevator-section animate-on-scroll" id="dumbwaiters-section" data-category="specialized">
+                    <h3 class="text-3xl font-semibold mb-6 text-blue-700">Dumbwaiters / Food Lifts</h3>
+                    <div class="md:flex md:space-x-8 items-start">
+                        <div class="md:w-1/3 flex-shrink-0">
+                            <img src="https://t4.ftcdn.net/jpg/11/60/46/63/360_F_1160466312_ZOtz8ptzArEo8CcP35aAXcob73EVXYtW.jpg" alt="Dumbwaiter" class="w-full h-96 object-cover rounded-md bg-gray-200" onerror="this.onerror=null;this.src='https://placehold.co/800x600/606060/ffffff?text=Image+Not+Available';">
+                            <div class="flex space-x-2 mt-2">
+                                <img src="https://image.made-in-china.com/202f0j00hJAWuVlzAprK/100kg-200kg-Kitchen-Food-Elevator-Dumbwaiter-for-Restaurant-Hotel.webp" alt="Dumbwaiter in a restaurant" class="w-1/2 h-52 object-cover rounded-md border" onerror="this.onerror=null;this.src='https://placehold.co/400x300/606060/ffffff?text=Image';">
+                                <img src="https://dynaelevators.com/images/dumbwaiter-plan2.jpg" alt="Dumbwaiter in an office" class="w-1/2 h-52 object-cover rounded-md border" onerror="this.onerror=null;this.src='https://placehold.co/400x300/606060/ffffff?text=Image';">
+                            </div>
+                        </div>
+                        <div class="md:w-2/3 mt-6 md:mt-0">
+                            <p>Our service elevators, commonly known as dumbwaiters or food lifts, are the perfect solution for transporting small goods, food, or documents between floors. Ideal for hotels, restaurants, offices, libraries, and hospitals, these compact lifts are manufactured using high-quality materials for durability and reliability. They offer an efficient and convenient way to reduce manual labor and streamline service operations.</p>
+                            <h4 class="text-2xl font-semibold mt-6 mb-4">Core Attributes</h4>
+                             <ul class="feature-list">
+                                <li><strong>Increased Efficiency:</strong> Speeds up service and logistics in multi-story establishments.</li>
+                                <li><strong>Quiet Operation:</strong> Designed for reduced noise levels to maintain a pleasant ambient environment.</li>
+                                <li><strong>User-Friendly & Safe:</strong> Simple controls and reliable performance ensure ease of use and safety.</li>
+                                <li><strong>Compact Design:</strong> Requires minimal space for installation. Capacity ranges from 100 to 250 kg.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card elevator-section animate-on-scroll" id="mrl-elevator-section" data-category="commercial">
+                    <h3 class="text-3xl font-semibold mb-6 text-blue-700">MRL (Machine-Room-Less) Elevator</h3>
+                    <div class="md:flex md:space-x-8 items-start">
+                        <div class="md:w-1/3 flex-shrink-0">
+                             <img src="https://5.imimg.com/data5/SELLER/Default/2024/4/406826753/SG/VU/SG/149344456/mrl-elevator-500x500.jpg" alt="MRL Elevator" class="w-full h-96 object-cover rounded-md bg-gray-200" onerror="this.onerror=null;this.src='https://placehold.co/800x600/505050/ffffff?text=Image+Not+Available';">
+                            <div class="flex space-x-2 mt-2">
+                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQtUot54O7BM0-QABjceRZYpzXLGc21510XeQ&s" alt="MRL Compact Motor" class="w-1/2 h-52 object-cover rounded-md border" onerror="this.onerror=null;this.src='https://placehold.co/400x300/505050/ffffff?text=Image';">
+                                <img src="https://dazenelevator.com/wp-content/uploads/2023/01/mrl.png" alt="MRL Hoistway" class="w-1/2 h-52 object-cover rounded-md border" onerror="this.onerror=null;this.src='https://placehold.co/400x300/505050/ffffff?text=Image';">
+                            </div>
+                        </div>
+                        <div class="md:w-2/3 mt-6 md:mt-0">
+                            <p>The revolutionary MRL (Machine-Room-Less) elevator is an innovative product that eliminates the need for a dedicated machine room, saving significant construction space, time, and materials. This design provides architects with greater flexibility and allows building owners to effectively utilize valuable space. The compact, gearless hoisting machine fits neatly within the hoistway itself.</p>
+                             <h4 class="text-2xl font-semibold mt-6 mb-4">The MRL Advantage</h4>
+                            <ul class="feature-list">
+                                <li><strong>Space & Cost Savings:</strong> No machine room reduces construction costs and frees up building space.</li>
+                                <li><strong>Energy Efficient:</strong> The advanced gearless motor consumes up to 30% less energy than traditional systems.</li>
+                                <li><strong>Superior Comfort:</strong> A digital drive controller and advanced roping system ensure excellent traveling comfort with a smooth, quiet ride.</li>
+                                <li><strong>Maximum Safety & Reliability:</strong> Engineered for top-tier safety with reduced maintenance requirements.</li>
+                            </ul>
+                            <h4 class="text-2xl font-semibold mt-6 mb-4">Specifications</h4>
+                            <div class="dimensions-table-container">
+                                <table class="dimensions-table">
+                                    <thead><tr><th>CAPACITY (PERSONS)</th><th>WEIGHT (KG)</th><th>LIFT WELL (W)</th><th>LIFT WELL (D)</th><th>CAR (W)</th><th>CAR (D)</th><th>CLEAR ENTRANCE (W)</th></tr></thead>
+                                    <tbody><tr><td>6</td><td>408</td><td>1800</td><td>1400</td><td>1200</td><td>900</td><td>700</td></tr><tr><td>8</td><td>544</td><td>1900</td><td>1600</td><td>1300</td><td>1100</td><td>800</td></tr><tr><td>10</td><td>680</td><td>1900</td><td>1800</td><td>1300</td><td>1300</td><td>800</td></tr><tr><td>13</td><td>884</td><td>2200</td><td>1900</td><td>1600</td><td>1400</td><td>900</td></tr></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card elevator-section animate-on-scroll" id="home-elevators-section" data-category="residential">
+                    <h3 class="text-3xl font-semibold mb-6 text-blue-700">Home/Bungalow Elevators</h3>
+                    <div class="md:flex md:space-x-8 items-start">
+                        <div class="md:w-1/3 flex-shrink-0">
+                            <img src="https://5.imimg.com/data5/SELLER/Default/2024/9/452569766/NA/NH/ZR/21057202/elevator-for-bungalow.jpg" alt="Home Elevator" class="w-full h-96 object-cover rounded-md bg-gray-200" onerror="this.onerror=null;this.src='https://placehold.co/800x600/404040/ffffff?text=Image+Not+Available';">
+                             <div class="flex space-x-2 mt-2">
+                                <img src="https://i.pinimg.com/474x/88/ee/b7/88eeb75753fccc9090d1280cb72d482a.jpg" alt="Home Elevator Interior" class="w-1/2 h-52 object-cover rounded-md border" onerror="this.onerror=null;this.src='https://placehold.co/400x300/404040/ffffff?text=Image';">
+                                <img src="https://lifcorelift.com/wp-content/uploads/2022/04/mini-small-home-lift-installation.jpg" alt="Home Elevator in a bungalow" class="w-1/2 h-52 object-cover rounded-md border" onerror="this.onerror=null;this.src='https://placehold.co/400x300/404040/ffffff?text=Image';">
+                            </div>
+                        </div>
+                        <div class="md:w-2/3 mt-6 md:mt-0">
+                            <p>It's not just a lift, it's a lifestyle. Our Home Elevators are precisely designed to add value, convenience, and elegance to your home. With noiseless operation and an elegant design, they provide easy and safe mobility from the basement to the attic with the simple push of a button. It is the ideal solution for elderly and physically challenged individuals, allowing them to move autonomously and free from the challenge of stairs.</p>
+                            <h4 class="text-2xl font-semibold mt-6 mb-4">Residential Comfort</h4>
+                            <ul class="feature-list">
+                                <li><strong>Adds Value:</strong> Enhances the accessibility and market value of your property.</li>
+                                <li><strong>Elegant Design:</strong> Complements your home's interior with customizable cabin finishes.</li>
+                                <li><strong>Quiet & Smooth:</strong> Ensures a peaceful home environment with a smooth ride and gentle final stop.</li>
+                                <li><strong>Compact & Easy to Install:</strong> Requires minimal space and can be integrated into new or existing homes.</li>
+                            </ul>
+                            <h4 class="text-2xl font-semibold mt-6 mb-4">Gearless Machine Specifications</h4>
+                            <div class="dimensions-table-container">
+                                <table class="dimensions-table"><tbody><tr><th>RPM</th><td>120</td><th>Pulley Dia</th><td>100 mm</td></tr><tr><th>Frequency</th><td>12Hz</td><th>Rope Dia</th><td>8 mm</td></tr><tr><th>Voltage</th><td>230 VAC</td><th>No. of Ropes</th><td>4</td></tr><tr><th>KW</th><td>2.75/1</td><th>Lifting Capacity</th><td>300 kg</td></tr><tr><th>Weight</th><td>70 kg</td><th>Lift Speed</th><td>0.32 m/s</td></tr><tr><th>Brake Voltage</th><td>Pick-up 220 VDC, Holding 110 VDC</td><th>Max Travel</th><td>15 mtr</td></tr></tbody></table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card elevator-section animate-on-scroll" id="hydraulic-car-elevator-section" data-category="specialized">
+                     <h3 class="text-3xl font-semibold mb-6 text-blue-700">Hydraulic & Car Elevators</h3>
+                     <div class="md:flex md:space-x-8 items-start">
+                        <div class="md:w-1/3 flex-shrink-0">
+                            <img src="https://cpimg.tistatic.com/08850735/b/4/extra-08850735.jpg" alt="Hydraulic Elevator" class="w-full h-96 object-cover rounded-md bg-gray-200" onerror="this.onerror=null;this.src='https://placehold.co/800x600/303030/ffffff?text=Image+Not+Available';">
+                            <div class="flex space-x-2 mt-2">
+                                <img src="https://atlanticelevators.com/wp-content/uploads/2021/02/Hydraulic-Elevator-01.jpg" alt="Car Lift in Use" class="w-1/2 h-52 object-cover rounded-md border" onerror="this.onerror=null;this.src='https://placehold.co/400x300/303030/ffffff?text=Image';">
+                                <img src="https://swiftlifts.com/wp-content/uploads/2024/04/Pitless.jpg" alt="Hydraulic Piston System" class="w-1/2 h-52 object-cover rounded-md border" onerror="this.onerror=null;this.src='https://placehold.co/400x300/303030/ffffff?text=Image';">
+                            </div>
+                        </div>
+                        <div class="md:w-2/3 mt-6 md:mt-0">
+                            <p>We offer a range of powerful hydraulic elevator solutions suitable for both passengers and vehicles. These systems are ideal for low to mid-rise buildings and offer design flexibility since the machine room can be located remotely. Our specialized car elevators provide a robust solution for the vertical transportation of vehicles in showrooms, multi-level car parks, and industrial settings, with capacities from 500 to 3000 kg and beyond.</p>
+                             <h4 class="text-2xl font-semibold mt-6 mb-4">Hydraulic Solutions</h4>
+                            <ul class="feature-list">
+                                <li><strong>Hole-Type:</strong> A direct suspension system with a simple piston, suitable for travels up to 6 meters.</li>
+                                <li><strong>Hole-Less Type:</strong> A side direct suspension with one or two pistons, ideal for large loads and short travels where drilling a jackhole is not feasible.</li>
+                                <li><strong>Car Transportation:</strong> Designed for industrial applications and car parks, providing safe and efficient vertical movement for LMVs.</li>
+                            </ul>
+                            <h4 class="text-2xl font-semibold mt-6 mb-4">Hydraulic Elevator Specifications (Holeless)</h4>
+                            <div class="dimensions-table-container">
+                                <table class="dimensions-table">
+                                    <thead><tr><th>PERSONS</th><th>CAPACITY (KG)</th><th>CAR (W)</th><th>CAR (D)</th><th>SHAFT (W)</th><th>SHAFT (D)</th></tr></thead>
+                                    <tbody><tr><td>3</td><td>225</td><td>800</td><td>900</td><td>1300</td><td>1300</td></tr><tr><td>4</td><td>300</td><td>850</td><td>1050</td><td>1350</td><td>1450</td></tr><tr><td>6</td><td>450</td><td>1100</td><td>1250</td><td>1600</td><td>1600</td></tr><tr><td>8</td><td>600</td><td>1200</td><td>1500</td><td>1750</td><td>1800</td></tr><tr><td>10</td><td>750</td><td>1200</td><td>1700</td><td>1750</td><td>1950</td></tr><tr><td>12</td><td>900</td><td>1300</td><td>1800</td><td>1850</td><td>2100</td></tr></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card elevator-section animate-on-scroll" id="escalators-stairlifts-section" data-category="specialized">
+                    <h3 class="text-3xl font-semibold mb-6 text-blue-700">Escalators & Stairlifts</h3>
+                    <div class="md:flex md:space-x-8 items-start">
+                        <div class="md:w-1/3 flex-shrink-0">
+                            <img src="https://images.pexels.com/photos/5098103/pexels-photo-5098103.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500" alt="Escalator" class="w-full h-96 object-cover rounded-md bg-gray-200" onerror="this.onerror=null;this.src='https://placehold.co/800x600/101010/ffffff?text=Image+Not+Available';">
+                            <div class="flex space-x-2 mt-2">
+                                <img src="https://machorne.wordpress.com/wp-content/uploads/2013/05/wheeler_patent_r.jpg" alt="Stairlift on a staircase" class="w-1/2 h-52 object-cover rounded-md border" onerror="this.onerror=null;this.src='https://placehold.co/400x300/101010/ffffff?text=Image';">
+                                <img src="https://5.imimg.com/data5/GLADMIN/Default/2022/7/HD/WJ/PD/92368/stair-lift-250x250.jpg" alt="Moving Walkway" class="w-1/2 h-52 object-cover rounded-md border" onerror="this.onerror=null;this.src='https://placehold.co/400x300/101010/ffffff?text=Image';">
+                            </div>
+                        </div>
+                        <div class="md:w-2/3 mt-6 md:mt-0">
+                            <p>Our escalators and moving walks are designed for high-traffic public spaces such as airports, subways, and shopping centers, providing smooth, safe, and continuous movement of people. For residential and private buildings, our premium stairlifts offer a safe and comfortable solution to improve mobility on any staircase, ensuring greater freedom and independence for the young and elderly alike.</p>
+                            <h4 class="text-2xl font-semibold mt-6 mb-4">Mobility for All</h4>
+                             <ul class="feature-list">
+                                <li><strong>Custom Escalators:</strong> Suitable for hotels and supermarkets, with customizable step widths, inclinations (30° & 35°), and features like VVVF control and auto-lubrication.</li>
+                                <li><strong>Custom-Made Stairlifts:</strong> We distribute and install models that can be adapted to any staircase, whether straight, curved, or with multiple landings.</li>
+                                <li><strong>Slim & Comfortable Design:</strong> The Simplicity stairlift features an ultra-slim folded profile to save space, and a wide, cushioned seat for maximum comfort.</li>
+                                <li><strong>Safety as Standard:</strong> All models are equipped with clip seat belts, safety-edge footplates, and key switches to prevent unauthorized use.</li>
+                            </ul>
+                            <h4 class="text-2xl font-semibold mt-6 mb-4">Stairlift Technical Data</h4>
+                            <div class="dimensions-table-container">
+                                <table class="dimensions-table"><tbody><tr><th>Weight Capacity</th><td>120kg / 19 stone</td></tr><tr><th>Speed</th><td>0.12 m/sec</td></tr><tr><th>Power Supply</th><td>24v DC battery</td></tr><tr><th>Charger</th><td>240v</td></tr><tr><th>Max Staircase Angle</th><td>50°</td></tr><tr><th>Minimum Folded Width</th><td>285mm</td></tr></tbody></table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card elevator-section animate-on-scroll" id="components-section" data-category="specialized">
+                     <h3 class="text-3xl font-semibold mb-6 text-blue-700">Components & Optional Features</h3>
+                     <div class="md:flex md:space-x-8 items-start">
+                        <div class="md:w-1/3 flex-shrink-0">
+                            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSwIVKTWDKYckgQxS5pP9ugRcd_vBoiQQ7_aY0eyxDOG5sB9nNz94FfRzmieFYK_LtKuoY&usqp=CAU" alt="Elevator Components" class="w-full h-96 object-cover rounded-md bg-gray-200" onerror="this.onerror=null;this.src='https://placehold.co/800x600/b0b0b0/333333?text=Image+Not+Available';">
+                            <div class="flex space-x-2 mt-2">
+                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQVnWYjh6lH7RRmvO_O_qjrSbH623k5cDpvcA&s" alt="V3F Drive Component" class="w-1/2 h-52 object-cover rounded-md border" onerror="this.onerror=null;this.src='https://placehold.co/400x300/b0b0b0/333333?text=Image';">
+                                <img src="https://5.imimg.com/data5/MF/NO/MY-46135077/manual-passenger-lift-500x500.jpg" alt="COP-LOP Panel" class="w-1/2 h-52 object-cover rounded-md border" onerror="this.onerror=null;this.src='https://placehold.co/400x300/b0b0b0/333333?text=Image';">
+                            </div>
+                        </div>
+                        <div class="md:w-2/3 mt-6 md:mt-0">
+                            <p>We utilize high-quality components and offer a vast range of optional features to customize your elevator to your exact needs. From the core machinery to the finishing touches, our components ensure performance, safety, and a premium user experience. This allows for complete personalization of aesthetics, functionality, and safety systems.</p>
+                            <h4 class="text-2xl font-semibold mt-6 mb-4">Available Options</h4>
+                            <div class="grid md:grid-cols-2 gap-x-8">
+                                <div>
+                                    <h5 class="text-xl font-semibold mb-2 mt-4">Core Technology</h5>
+                                     <ul class="feature-list">
+                                        <li>VVVF (Variable Voltage Variable Frequency) Drives for smooth rides and energy savings.</li>
+                                        <li>Powerful and reliable Traction Machines.</li>
+                                        <li>Advanced Microprocessor Control Panels.</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                     <h5 class="text-xl font-semibold mb-2 mt-4">Safety Systems</h5>
+                                     <ul class="feature-list">
+                                        <li>Automatic Rescue Device (ARD) for power failure situations.</li>
+                                        <li>Infrared Door Detectors and Photosensors.</li>
+                                        <li>Overload sensors and Fireman Operation modes.</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h5 class="text-xl font-semibold mb-2 mt-4">Cabins & Doors</h5>
+                                     <ul class="feature-list">
+                                        <li>Wide variety of cabin finishes (Powder coated, Stainless Steel, Titanium Gold).</li>
+                                        <li>Multiple door types (Collapsible, Swing, Telescopic, Centre-Opening, Glass).</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                     <h5 class="text-xl font-semibold mb-2 mt-4">Controls & Displays</h5>
+                                     <ul class="feature-list">
+                                        <li>Customizable COP/LOP panels with various push button styles.</li>
+                                        <li>Choice of displays (Seven Segment, Dot Matrix, LCD).</li>
+                                        <li>Advanced features like card access, voice synthesizers, and monitoring systems.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section id="testimonials" class="py-20 px-4 bg-gray-100">
+        <div class="container mx-auto">
+             <div class="text-center mb-12 animate-on-scroll">
+                <h2 class="text-4xl font-bold section-heading">What Our Clients Say</h2>
+                <p class="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">We are proud to have earned the trust of clients across various industries.</p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="card animate-on-scroll">
+                    <div class="flex-grow">
+                        <p class="text-gray-600 mb-6">"The installation was seamless, and the new elevator has significantly improved the accessibility of our building. Stanley Industries delivered on their promise of quality and professionalism."</p>
+                    </div>
+                    <div>
+                        <p class="font-bold text-gray-800">John D.</p>
+                        <p class="text-sm text-gray-500">Commercial Real Estate Manager</p>
+                    </div>
+                </div>
+                <div class="card animate-on-scroll" style="transition-delay: 150ms;">
+                     <div class="flex-grow">
+                        <p class="text-gray-600 mb-6">"From the initial consultation to the final handover, the team was knowledgeable and attentive. The capsule elevator is a magnificent addition to our hotel lobby."</p>
+                    </div>
+                    <div>
+                        <p class="font-bold text-gray-800">Sarah W.</p>
+                        <p class="text-sm text-gray-500">Hotel Owner</p>
+                    </div>
+                </div>
+                 <div class="card animate-on-scroll" style="transition-delay: 300ms;">
+                     <div class="flex-grow">
+                        <p class="text-gray-600 mb-6">"We needed a reliable and robust goods elevator for our warehouse, and Stanley delivered. It's been operating flawlessly under heavy use. Highly recommended."</p>
+                    </div>
+                    <div>
+                        <p class="font-bold text-gray-800">Mike R.</p>
+                        <p class="text-sm text-gray-500">Logistics Director</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- "Request a Quote" Modal -->
+    <div id="quoteModal" class="modal">
+      <div class="modal-content">
+        <span class="close-button">&times;</span>
+        <h2 class="text-3xl font-bold mb-6 text-center">Request a Quote</h2>
+        <form id="quoteForm">
+          <div class="mb-4"><label for="name" class="block text-gray-700 text-sm font-bold mb-2">Full Name:</label><input type="text" id="name" name="name" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required></div>
+          <div class="mb-4"><label for="email" class="block text-gray-700 text-sm font-bold mb-2">Email:</label><input type="email" id="email" name="email" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required></div>
+          <div class="mb-4"><label for="phone" class="block text-gray-700 text-sm font-bold mb-2">Phone Number:</label><input type="tel" id="phone" name="phone" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"></div>
+          <div class="mb-4"><label for="elevatorType" class="block text-gray-700 text-sm font-bold mb-2">Elevator Type:</label><select id="elevatorType" name="elevatorType" class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"><option>Passenger Elevator</option><option>Capsule Elevator</option><option>Hospital Elevator</option><option>Goods Elevator</option><option>Home Elevator</option><option>Other</option></select></div>
+          <div class="mb-6"><label for="message" class="block text-gray-700 text-sm font-bold mb-2">Message:</label><textarea id="message" name="message" rows="4" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"></textarea></div>
+          <div class="text-center"><button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-md transition duration-300">Submit Request</button></div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Back to top button -->
+    <button id="backToTopBtn" title="Go to top"><i class="fas fa-arrow-up"></i></button>
+
+    <!-- Footer -->
+    <footer id="contact" class="bg-gray-800 text-gray-300 pt-16 pb-8 px-4">
+        <div class="container mx-auto">
+             <div class="grid md:grid-cols-3 gap-8">
+                 <!-- About & Info -->
+                <div class="animate-on-scroll">
+                    <h3 class="text-2xl font-bold text-white mb-4">Stanley Industries</h3>
+                    <p class="mb-4">Your trusted partner in vertical transportation. We are dedicated to providing innovative, safe, and reliable elevator solutions tailored to your needs.</p>
+                </div>
+                 <!-- Quick Links -->
+                 <div class="animate-on-scroll" style="transition-delay: 150ms;">
+                     <h3 class="text-xl font-semibold text-white mb-4">Quick Links</h3>
+                     <ul>
+                         <li class="mb-2"><a href="#about" class="hover:text-blue-400 transition-colors">About Us</a></li>
+                         <li class="mb-2"><a href="#elevator-services" class="hover:text-blue-400 transition-colors">Services</a></li>
+                         <li class="mb-2"><a href="#testimonials" class="hover:text-blue-400 transition-colors">Testimonials</a></li>
+                         <li class="mb-2"><a href="#" id="footerQuoteBtn" class="hover:text-blue-400 transition-colors">Request a Quote</a></li>
+                     </ul>
+                 </div>
+                 <!-- Contact Info -->
+                 <div class="animate-on-scroll" style="transition-delay: 300ms;">
+                     <h3 class="text-xl font-semibold text-white mb-4">Contact Us</h3>
+                     <p class="mb-2"><i class="fas fa-map-marker-alt w-6 mr-2"></i>123 Elevator Lane, Industry City, 12345</p>
+                     <p class="mb-2"><i class="fas fa-phone w-6 mr-2"></i>(123) 456-7890</p>
+                     <p class="mb-2"><i class="fas fa-envelope w-6 mr-2"></i>contact@stanleyindustries.com</p>
+                 </div>
+             </div>
+             <div class="border-t border-gray-700 mt-12 pt-6 text-center text-gray-500">
+                <p>&copy; 2025 Stanley Industries Group. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Dropdown menu logic ---
+            const menuButton = document.getElementById('elevator-menu-button');
+            const menu = document.getElementById('elevator-menu');
+            const menuArrow = document.getElementById('elevator-menu-arrow');
+            menuButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                const isHidden = menu.classList.toggle('hidden');
+                menuArrow.style.transform = isHidden ? 'rotate(0deg)' : 'rotate(180deg)';
+            });
+            window.addEventListener('click', (e) => {
+                if (!menuButton.contains(e.target) && !menu.contains(e.target)) {
+                    menu.classList.add('hidden');
+                    menuArrow.style.transform = 'rotate(0deg)';
+                }
+            });
+
+            // --- Smooth scrolling for section links ---
+             document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    const href = this.getAttribute('href');
+                    // Close dropdown if a link inside is clicked
+                    if (menu && !menu.classList.contains('hidden') && menu.contains(this)) {
+                       menu.classList.add('hidden');
+                       menuArrow.style.transform = 'rotate(0deg)';
+                    }
+                    // Prevent default for all but the modal triggers
+                    if (href !== '#' && !this.id.includes('QuoteBtn')) {
+                         e.preventDefault();
+                         document.querySelector(href).scrollIntoView({
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+
+            // --- Back to Top button logic ---
+            const backToTopBtn = document.getElementById('backToTopBtn');
+            window.onscroll = () => {
+                if (document.body.scrollTop > 200 || document.documentElement.scrollTop > 200) {
+                    backToTopBtn.style.display = "block";
+                } else {
+                    backToTopBtn.style.display = "none";
+                }
+            };
+            backToTopBtn.addEventListener('click', () => window.scrollTo({top: 0, behavior: 'smooth'}));
+            
+            // --- Modal logic ---
+            const modal = document.getElementById('quoteModal');
+            const quoteBtns = [document.getElementById('quoteBtn'), document.getElementById('footerQuoteBtn')];
+            const span = document.getElementsByClassName('close-button')[0];
+            
+            quoteBtns.forEach(btn => {
+                if(btn) btn.onclick = (e) => { e.preventDefault(); modal.style.display = "block"; }
+            });
+
+            span.onclick = () => modal.style.display = "none";
+            window.onclick = (event) => {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            }
+            
+            document.getElementById('quoteForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const modalContent = modal.querySelector('.modal-content');
+                modalContent.innerHTML = `<div class="text-center p-8"><h2 class="text-2xl font-bold text-green-600 mb-4">Thank You!</h2><p>Your quote request has been submitted successfully. We will get back to you shortly.</p></div>`;
+                setTimeout(() => {
+                    modal.style.display = "none";
+                    location.reload(); // Restore original modal content
+                }, 3000);
+            });
+
+            // --- Filter logic ---
+            const filterContainer = document.getElementById('filter-container');
+            const elevatorGrid = document.getElementById('elevator-grid');
+            const elevatorSections = elevatorGrid.querySelectorAll('.elevator-section');
+            if (filterContainer) {
+                 filterContainer.addEventListener('click', (event) => {
+                    const target = event.target.closest('button');
+                    if(!target) return;
+
+                    const currentActive = filterContainer.querySelector('.active');
+                    if (currentActive) {
+                        currentActive.classList.remove('active');
+                        currentActive.classList.remove('bg-blue-600', 'text-white');
+                        currentActive.classList.add('bg-gray-200', 'hover:bg-gray-300', 'text-gray-800');
+                    }
+                    
+                    target.classList.add('active', 'bg-blue-600', 'text-white');
+                    target.classList.remove('bg-gray-200', 'hover:bg-gray-300', 'text-gray-800');
+
+                    const filter = target.getAttribute('data-filter');
+
+                    elevatorSections.forEach(section => {
+                        const category = section.getAttribute('data-category');
+                        if (filter === 'all' || filter === category) {
+                            section.style.display = 'block';
+                        } else {
+                            section.style.display = 'none';
+                        }
+                    });
+                });
+            }
+
+            // --- Scroll Animation Logic ---
+            const animatedElements = document.querySelectorAll('.animate-on-scroll');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            animatedElements.forEach(el => observer.observe(el));
+        });
+    </script>
+</body>
+</html>

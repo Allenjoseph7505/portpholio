@@ -1,0 +1,2286 @@
+<!DOCTYPE html>
+<html lang="en" class="">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Snooker Table Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom Styles */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Tailwind gray-100 */
+            scroll-behavior: smooth;
+            transition: background-color: 0.3s ease, color 0.3s ease;
+        }
+
+        .dark body {
+            background-color: #111827; /* Tailwind gray-900 */
+            color: #d1d5db; /* Tailwind gray-300 */
+        }
+
+        input[list]::-webkit-calendar-picker-indicator {
+            display: none !important;
+        }
+
+        @media print {
+            body {
+                padding: 0;
+                background-color: white !important;
+                color: black !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                scroll-behavior: auto;
+            }
+            .no-print { display: none !important; }
+            .print-container {
+                box-shadow: none; border: none; padding: 10mm; margin: 0; width: 100%; max-width: 100%; height: auto; overflow: visible;
+                background-color: white !important;
+            }
+            #tables-container-wrapper { width: 100% !important; }
+            #tables {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 10mm;
+                overflow: visible;
+                padding-bottom: 0;
+            }
+            .table-box {
+                width: auto;
+                box-shadow: none;
+                border: 1px solid #ccc !important;
+                page-break-inside: avoid;
+                background-color: white !important;
+                color: black !important;
+            }
+            .table-box h2, .table-box p, .table-box span, .table-box strong {
+                color: black !important;
+            }
+            .management-sections, #search-modal, .main-action-button-container, #manage-tables-box, #history-filter-controls, #summary-section, #management-menu-button-wrapper, #management-popup-menu, #custom-items-panel, #dark-mode-toggle, #player-dues-box, #manage-players-box, #manual-payment-box {
+                display: none !important;
+            }
+            #manage-tables-box.print-hidden, #extra-items-box.print-hidden, #manual-payment-box.print-hidden {
+                display: none !important;
+            }
+            h1 { margin-bottom: 25px; color: black !important; }
+            .table-controls button { width: 100%; margin: 5px 0; }
+            .print-bg-green-100 { background-color: #d1fae5 !important; }
+            .print-border-green-500 { border-left-color: #10b981 !important; border-left-width: 4px !important; }
+            .print-bg-yellow-100 { background-color: #fef3c7 !important; }
+            .print-border-yellow-500 { border-left-color: #f59e0b !important; border-left-width: 4px !important; }
+            .print-bg-blue-100 { background-color: #dbeafe !important; }
+            .print-border-blue-500 { border-left-color: #3b82f6 !important; border-left-width: 4px !important; }
+            .print-text-red-600 { color: #dc2626 !important; }
+            .print-text-green-600 { color: #16a34a !important; }
+            #pending-amount-section table th, #pending-amount-section table td {
+                border: 1px solid #ddd !important;
+                color: black !important;
+            }
+            #pending-amount-section {
+                background-color: white !important;
+                border-color: #ccc !important;
+            }
+            #pending-amount-section h3 { color: black !important; }
+            #pending-amount-section #total-pending-amount-final, #pending-amount-section #overall-total-due-amount { color: black !important; }
+            .table-image { border: 1px solid #eee !important; }
+        }
+
+        /* Common class for suggestion boxes for scrollbar styling */
+        .player-suggestion-box::-webkit-scrollbar { width: 8px; }
+        .player-suggestion-box::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        .player-suggestion-box::-webkit-scrollbar-thumb { background: #a0aec0; border-radius: 4px; }
+        .player-suggestion-box::-webkit-scrollbar-thumb:hover { background: #718096; }
+
+        .dark .player-suggestion-box::-webkit-scrollbar-track { background: #374151; }
+        .dark .player-suggestion-box::-webkit-scrollbar-thumb { background: #6b7280; }
+        .dark .player-suggestion-box::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+
+        #player-dues-list::-webkit-scrollbar, #manage-players-list::-webkit-scrollbar { width: 8px; }
+        #player-dues-list::-webkit-scrollbar-track, #manage-players-list::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        #player-dues-list::-webkit-scrollbar-thumb, #manage-players-list::-webkit-scrollbar-thumb { background: #a0aec0; border-radius: 4px; }
+        #player-dues-list::-webkit-scrollbar-thumb:hover, #manage-players-list::-webkit-scrollbar-thumb:hover { background: #718096; }
+
+        .dark #player-dues-list::-webkit-scrollbar-track, .dark #manage-players-list::-webkit-scrollbar-track { background: #374151; }
+        .dark #player-dues-list::-webkit-scrollbar-thumb, .dark #manage-players-list::-webkit-scrollbar-thumb { background: #6b7280; }
+        .dark #player-dues-list::-webkit-scrollbar-thumb:hover, .dark #manage-players-list::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+
+
+        .hidden-section { display: none; }
+        #back-to-top-button {
+            position: fixed; bottom: 20px; right: 20px; display: none; z-index: 100;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out; opacity: 0; visibility: hidden;
+        }
+        #back-to-top-button.show { display: inline-flex; opacity: 1; visibility: visible; }
+        #pending-amount-section .overflow-x-auto { width: 100%; }
+        #pending-amount-section table { width: 100%; }
+        #dark-mode-toggle svg { transition: opacity 0.3s ease-in-out; }
+    </style>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'], },
+                    colors: {
+                        primary: { light: '#67e8f9', DEFAULT: '#06b6d4', dark: '#0e7490', },
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200">
+
+    <div id="header-bar" class="relative bg-gray-900 dark:bg-black text-white py-3 no-print shadow-lg">
+        <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 relative flex justify-between items-center">
+            <button id="dark-mode-toggle" title="Toggle dark mode" class="p-2 rounded-full hover:bg-gray-700 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 dark:focus:ring-offset-black focus:ring-white transition-colors duration-150">
+                <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m8.66-15.66l-.707.707M4.04 19.96l-.707.707M21 12h-1M4 12H3m15.66 8.66l-.707-.707M4.04 4.04l-.707-.707" />
+                </svg>
+                <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-300 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+            </button>
+            <div class="text-center absolute left-1/2 transform -translate-x-1/2">
+                <h1 class="text-2xl sm:text-3xl font-bold tracking-wider uppercase">Snook Club</h1>
+            </div>
+            <div id="current-datetime-container" class="text-right">
+                <p id="current-datetime" class="text-xs sm:text-sm text-gray-300 dark:text-gray-400">Loading date and time...</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="container print-container max-w-screen-2xl mx-auto p-4 md:p-8 lg:p-12 bg-white dark:bg-gray-800 rounded-lg shadow-xl dark:shadow-2xl mt-8 relative">
+        <div class="mb-8 no-print text-center main-action-button-container" id="main-actions-container">
+            <button onclick="openSearchModal()" class="main-action-button inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out">
+                Search Player Records
+            </button>
+            <div id="management-menu-button-wrapper" class="inline-block relative ml-4">
+                <button id="management-menu-button" onclick="toggleManagementMenu(event)" class="main-action-button inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-sky-600 hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 transition duration-150 ease-in-out">
+                    Management Actions
+                    <svg class="w-5 h-5 ml-2 -mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                </button>
+                <div id="management-popup-menu" class="absolute z-40 mt-2 w-72 rounded-md shadow-lg bg-white dark:bg-gray-700 ring-1 ring-black dark:ring-gray-600 ring-opacity-5 focus:outline-none no-print origin-top-right right-0 md:origin-top md:left-1/2 md:-translate-x-1/2" style="display: none;">
+                    <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="management-menu-button">
+                        <a href="#" onclick="showManagementSection('manage-tables-box'); return false;" class="block px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-gray-900 dark:hover:text-white rounded-t-md transition duration-150 ease-in-out" role="menuitem">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3 inline-block text-gray-500 dark:text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path d="M5 3a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V5a2 2 0 00-2-2H5zm0 2h10v10H5V5z" /><path d="M7 7h2v2H7V7zm4 0h2v2h-2V7zm-4 4h2v2H7v-2zm4 0h2v2h-2v-2z" /></svg>
+                            Manage Tables
+                        </a>
+                         <a href="#" onclick="showManagementSection('delete-table-box'); return false;" class="block px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-gray-900 dark:hover:text-white transition duration-150 ease-in-out" role="menuitem">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3 inline-block text-red-500 dark:text-red-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd" /></svg>
+                            Delete Table
+                        </a>
+                        <a href="#" onclick="showManagementSection('manage-players-box'); return false;" class="block px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-gray-900 dark:hover:text-white transition duration-150 ease-in-out" role="menuitem">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3 inline-block text-gray-500 dark:text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" /></svg>
+                            Manage Players
+                        </a>
+                        <a href="#" onclick="showManagementSection('player-dues-box'); return false;" class="block px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-gray-900 dark:hover:text-white transition duration-150 ease-in-out" role="menuitem">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3 inline-block text-gray-500 dark:text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm0 6h12v2H4v-2zm0 4h12v2H4v-2z" clip-rule="evenodd" /></svg>
+                            Player Dues
+                        </a>
+                        <a href="#" onclick="showManagementSection('summary-section'); return false;" class="block px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-gray-900 dark:hover:text-white rounded-b-md transition duration-150 ease-in-out" role="menuitem">
+                           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3 inline-block text-gray-500 dark:text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 110-12 6 6 0 010 12z" /><path d="M10 4a1 1 0 011 1v4a1 1 0 11-2 0V5a1 1 0 011-1zm0 8a1 1 0 100 2 1 1 0 000-2z" /></svg>
+                            Games
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <button onclick="window.print()" class="main-action-button inline-flex items-center px-6 py-3 border border-gray-300 dark:border-gray-600 text-base font-medium rounded-md shadow-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out ml-4">
+                Print Tables View
+            </button>
+            <button id="undo-last-action-btn" onclick="undoLastAction()" class="main-action-button inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-gray-500 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 disabled:opacity-50 disabled:cursor-not-allowed transition duration-150 ease-in-out ml-4" disabled>
+                Undo Last Action
+            </button>
+        </div>
+
+        <div class="flex flex-col lg:flex-row gap-6 mb-12 lg:items-start">
+            <div id="tables-container-wrapper" class="flex-grow">
+                    <div id="manage-tables-box" class="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm mb-8 no-print hidden-section">
+                        <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-4 border-b dark:border-gray-600 pb-2">Manage Tables</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+                            <div>
+                                <label for="new-table-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Table Name:</label>
+                                <input type="text" id="new-table-name" placeholder="e.g., Corner Pocket" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400 sm:text-sm">
+                            </div>
+                            <div>
+                                <label for="new-table-size-desc" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Size Description:</label>
+                                <input type="text" id="new-table-size-desc" placeholder="e.g., Small, 9ft" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400 sm:text-sm">
+                            </div>
+                             <div>
+                                <label for="new-table-rate" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Rate (₹/min):</label>
+                                <input type="number" id="new-table-rate" placeholder="e.g., 1.5" min="0" step="0.1" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400 sm:text-sm">
+                            </div>
+                            <div>
+                                <label for="new-table-image" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Image URL (Optional):</label>
+                                <input type="text" id="new-table-image" placeholder="https://..." class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400 sm:text-sm">
+                            </div>
+                            <button onclick="addNewTable()" class="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150 ease-in-out">Add Table</button>
+                        </div>
+                    </div>
+                <div id="tables" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6"></div>
+            </div>
+            <div class="w-full lg:w-80 flex-shrink-0 no-print">
+                <div class="space-y-4">
+                    <div id="custom-items-panel" class="bg-gray-50 dark:bg-gray-800 p-2 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+                        <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2 border-b dark:border-gray-600 pb-2">General Items</h2>
+                        <div class="space-y-2">
+                            <div>
+                                <label for="extra-item-player" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Player Name:</label>
+                                <input type="text" id="extra-item-player" placeholder="Enter player's name" list="player-list" class="mt-1 block w-full px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400 sm:text-sm">
+                            </div>
+                            <div class="space-y-2">
+                                <label for="extra-item-amount" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Amount (₹):</label>
+                                <input type="number" id="extra-item-amount" placeholder="Enter amount" min="0" class="mt-1 block w-full px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400 sm:text-sm">
+                                <div class="grid grid-cols-2 gap-2">
+                                    <button onclick="setGeneralItemAmount(15)" class="w-full text-xs inline-flex justify-center py-1 px-3 border border-gray-300 dark:border-gray-500 shadow-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-600 hover:bg-gray-50 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out">₹15</button>
+                                    <button onclick="setGeneralItemAmount(25)" class="w-full text-xs inline-flex justify-center py-1 px-3 border border-gray-300 dark:border-gray-500 shadow-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-600 hover:bg-gray-50 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out">₹25</button>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 pt-2">
+                                <button onclick="handleAddGeneralItemToDues()" class="w-full inline-flex justify-center py-1.5 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 dark:bg-orange-500 dark:hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition duration-150 ease-in-out">Add to Dues</button>
+                                <button onclick="handleMarkGeneralItemAsPaid()" class="w-full inline-flex justify-center py-1.5 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150 ease-in-out">Mark as Paid</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="manual-payment-box" class="bg-white dark:bg-gray-800 p-2 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm no-print">
+                        <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2 border-b dark:border-gray-600 pb-2">Manual Payment</h2>
+                        <div class="space-y-2">
+                            <div>
+                                <label for="manual-payment-player" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Player Name:</label>
+                                <input type="text" id="manual-payment-player" placeholder="Enter player's name" list="player-list" class="mt-1 block w-full px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400 sm:text-sm">
+                                <datalist id="player-list"></datalist>
+                            </div>
+                            <p class="mt-2 text-sm font-medium text-gray-800 dark:text-gray-200">Currently Due: <span id="manual-payment-player-due" class="font-bold">₹0.00</span></p>
+                            <div>
+                                <label for="manual-payment-amount" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Amount Paid (₹):</label>
+                                <input type="number" id="manual-payment-amount" placeholder="Enter amount paid" min="0" class="mt-1 block w-full px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400 sm:text-sm">
+                            </div>
+                            <button onclick="recordManualPayment()" class="w-full inline-flex justify-center py-1.5 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition duration-150 ease-in-out">Record Manual Payment</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="management-sections grid grid-cols-1 md:grid-cols-2 gap-8 mb-12 no-print">
+            <div id="manage-players-box" class="form-section bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm hidden-section">
+                <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-4 border-b dark:border-gray-600 pb-2">Manage Players</h2>
+                <div class="mb-4">
+                    <label for="filter-manage-player-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Filter Players:</label>
+                    <input type="text" id="filter-manage-player-name" placeholder="Search to filter players..." class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400 sm:text-sm">
+                </div>
+                <div id="manage-players-list" class="space-y-2 max-h-96 overflow-y-auto pr-1">
+                </div>
+            </div>
+            <div id="delete-table-box" class="form-section bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm hidden-section">
+                <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-4 border-b dark:border-gray-600 pb-2">Delete Table</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label for="delete-table-select" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Select Table to Delete:</label>
+                        <select id="delete-table-select" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100 sm:text-sm">
+                        </select>
+                    </div>
+                    <button onclick="handleDeleteTableFromMenu()" class="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">Delete Selected Table</button>
+                </div>
+            </div>
+            <div id="summary-section" class="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm hidden-section">
+                <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-4 border-b dark:border-gray-600 pb-2">Games</h2>
+                <div id="summary-controls" class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end bg-gray-50 dark:bg-gray-800 p-4 rounded border border-gray-100 dark:border-gray-700 mb-4">
+                    <div>
+                        <label for="summary-start-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Start Date:</label>
+                        <input type="date" id="summary-start-date" class="mt-1 block w-full px-3 py-2 bg-white text-gray-900 placeholder-gray-500 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400 dark:border-gray-600 sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="summary-end-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">End Date:</label>
+                        <input type="date" id="summary-end-date" class="mt-1 block w-full px-3 py-2 bg-white text-gray-900 placeholder-gray-500 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400 dark:border-gray-600 sm:text-sm">
+                    </div>
+                    <div class="sm:col-span-1">
+                        <button onclick="calculateDateRangeSummary()" class="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-cyan-600 hover:bg-cyan-700 dark:bg-cyan-500 dark:hover:bg-cyan-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 transition duration-150 ease-in-out">Calculate Summary</button>
+                    </div>
+                </div>
+                <div id="summary-results" class="mt-4 p-4 border-t border-gray-200 dark:border-gray-600" style="display: none;">
+                    <p class="text-base mb-2 text-gray-800 dark:text-gray-200"><strong>Total Earnings (Manual Payments) in Period:</strong> <span id="summary-total-earnings" class="font-semibold text-green-600 dark:text-green-400">₹0.00</span></p>
+                    <p class="text-base text-gray-800 dark:text-gray-200"><strong>Total Dues Generated (Game Losses + Session Extras + General Items) in Period:</strong> <span id="summary-total-dues" class="font-semibold text-red-600 dark:text-red-400">₹0.00</span></p>
+                </div>
+            </div>
+        </div>
+
+        <div id="player-dues-box" class="management-sections bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm mb-12 no-print hidden-section">
+            <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-4 border-b dark:border-gray-600 pb-2">All Player Dues</h2>
+            <div id="player-dues-filter-controls" class="grid grid-cols-1 sm:grid-cols-4 gap-4 items-end bg-gray-50 dark:bg-gray-800 p-4 rounded border border-gray-100 dark:border-gray-700 mb-6">
+                <div>
+                    <label for="dues-filter-start-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Start Date:</label>
+                    <input type="date" id="dues-filter-start-date" class="mt-1 block w-full px-3 py-2 bg-white text-gray-900 placeholder-gray-500 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400 dark:border-gray-600 sm:text-sm">
+                </div>
+                <div>
+                    <label for="dues-filter-end-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">End Date:</label>
+                    <input type="date" id="dues-filter-end-date" class="mt-1 block w-full px-3 py-2 bg-white text-gray-900 placeholder-gray-500 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400 dark:border-gray-600 sm:text-sm">
+                </div>
+                <div>
+                    <label for="dues-sort-order" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Sort By:</label>
+                    <select id="dues-sort-order" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100 sm:text-sm">
+                        <option value="name_asc">Name (A-Z)</option>
+                        <option value="dues_desc">Dues (High to Low)</option>
+                        <option value="dues_asc">Dues (Low to High)</option>
+                    </select>
+                </div>
+                <div class="flex space-x-2">
+                    <button onclick="applyPlayerDuesFilter()" class="flex-1 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out">Apply</button>
+                    <button onclick="clearPlayerDuesFilter()" class="flex-1 inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-500 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-600 hover:bg-gray-50 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out">Clear</button>
+                </div>
+            </div>
+            <div id="player-dues-list" class="space-y-2 max-h-96 overflow-y-auto">
+            </div>
+        </div>
+
+        <div id="history-box" class="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm mb-12 no-print">
+            <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-4 border-b dark:border-gray-600 pb-2">Transaction History</h2>
+            <div id="history-filter-controls" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end bg-gray-50 dark:bg-gray-800 p-4 rounded border border-gray-100 dark:border-gray-700 mb-6">
+                    <div>
+                        <label for="filter-player-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Player Name:</label>
+                        <input type="text" id="filter-player-name" placeholder="Filter by player" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400 sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="filter-start-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Start Date:</label>
+                        <input type="date" id="filter-start-date" class="mt-1 block w-full px-3 py-2 bg-white text-gray-900 placeholder-gray-500 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400 dark:border-gray-600 sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="filter-end-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">End Date:</label>
+                        <input type="date" id="filter-end-date" class="mt-1 block w-full px-3 py-2 bg-white text-gray-900 placeholder-gray-500 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400 dark:border-gray-600 sm:text-sm">
+                    </div>
+                <div class="flex space-x-2">
+                    <button onclick="applyHistoryFilter()" class="flex-1 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out">Apply</button>
+                    <button onclick="clearHistoryFilter()" class="flex-1 inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-500 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-600 hover:bg-gray-50 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out">Clear</button>
+                </div>
+            </div>
+            <div id="history-list" class="space-y-3"></div>
+        </div>
+
+        <div id="pending-amount-section" class="bg-blue-50 dark:bg-slate-800 p-4 sm:p-6 rounded-lg border border-blue-200 dark:border-slate-700 shadow-sm mb-12 no-print" style="display:none;">
+            <h3 class="text-lg font-semibold text-blue-800 dark:text-blue-300 mb-4">Player Transaction Details</h3>
+            <div class="overflow-x-auto shadow-sm rounded-md">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 border border-gray-200 dark:border-gray-700">
+                    <thead class="bg-gray-100 dark:bg-gray-700">
+                        <tr>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Date</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Type</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Description</th>
+                            <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Debit (₹)</th>
+                            <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Credit (₹)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pending-amount-table-body" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"></tbody>
+                </table>
+            </div>
+            <p class="border-t border-blue-300 dark:border-slate-600 pt-4 mt-4 text-base text-gray-800 dark:text-gray-200">
+                <strong>Period Due/Balance:</strong> <span id="total-pending-amount-final" class="font-bold text-lg">₹0.00</span>
+            </p>
+            <p class="pt-2 text-base text-gray-800 dark:text-gray-200"> <strong>Total Overdue Payment:</strong> <span id="overall-total-due-amount" class="font-bold text-lg">₹0.00</span>
+            </p>
+        </div>
+    </div>
+
+    <div id="search-modal" class="fixed inset-0 z-50 bg-gray-600 dark:bg-black bg-opacity-75 dark:bg-opacity-75 flex items-center justify-center p-4 no-print" style="display: none;">
+        <div id="search-modal-content" class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-lg">
+            <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-6 text-center">Search Player Records</h2>
+            <div class="space-y-4">
+                <div class="relative">
+                    <label for="search-player-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Player Name:</label>
+                    <input type="text" id="search-player-name" placeholder="Type to search players..." autocomplete="off" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400 sm:text-sm">
+                    <div id="search-player-suggestions" class="player-suggestion-box absolute z-10 w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-b-md mt-0 shadow-lg max-h-48 overflow-y-auto" style="display: none; top: 100%;"></div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="search-start-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Start Date (Optional):</label>
+                        <input type="date" id="search-start-date" class="mt-1 block w-full px-3 py-2 bg-white text-gray-900 placeholder-gray-500 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400 dark:border-gray-600 sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="search-end-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">End Date (Optional):</label>
+                        <input type="date" id="search-end-date" class="mt-1 block w-full px-3 py-2 bg-white text-gray-900 placeholder-gray-500 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400 dark:border-gray-600 sm:text-sm">
+                    </div>
+                </div>
+            </div>
+            <div class="mt-8 flex justify-end space-x-3">
+                <button onclick="closeSearchModal()" class="inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-500 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-600 hover:bg-gray-50 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out">
+                    Close
+                </button>
+                <button onclick="searchPlayer()" id="search-button-apply" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150 ease-in-out">
+                    Search / Apply Filters
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <button id="back-to-top-button" onclick="scrollToTop()" title="Go to top" class="no-print p-3 bg-indigo-600 dark:bg-indigo-500 text-white rounded-full shadow-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+        </svg>
+    </button>
+
+<script>
+    // --- Configuration ---
+    let TABLE_CONFIG = []; // Holds the configuration for each snooker table
+    const DEFAULT_RATE_BIG_TABLE = 2; // Default rate for big tables (₹ per minute)
+    const DEFAULT_RATE_SMALL_TABLE = 1; // Default rate for small tables (₹ per minute)
+    const MINIMUM_CHARGE_DURATION_SECONDS = 20 * 60; // Minimum duration for which a table will be charged (e.g., 20 minutes)
+
+    // Default table setup if nothing is found in localStorage
+    const DEFAULT_TABLE_CONFIG = [
+        { id: 'T1', name: 'Table 1 (Championship)', sizeDescription: 'Big', rate: DEFAULT_RATE_BIG_TABLE, image: 'https://placehold.co/400x250/00695C/FFFFFF?text=Snooker+Table+1' },
+        { id: 'T2', name: 'Table 2 (Club)', sizeDescription: 'Big', rate: DEFAULT_RATE_BIG_TABLE, image: 'https://placehold.co/400x250/00796B/FFFFFF?text=Snooker+Table+2' },
+        { id: 'T3', name: 'Table 3 (Standard)', sizeDescription: 'Small', rate: DEFAULT_RATE_SMALL_TABLE, image: 'https://placehold.co/400x250/00897B/FFFFFF?text=Pool+Table+3' },
+        { id: 'T4', name: 'Table 4 (Standard)', sizeDescription: 'Small', rate: DEFAULT_RATE_SMALL_TABLE, image: 'https://placehold.co/400x250/009688/FFFFFF?text=Pool+Table+4' },
+        { id: 'T5', name: 'Table 5 (Corner)', sizeDescription: 'Small', rate: DEFAULT_RATE_SMALL_TABLE, image: 'https://placehold.co/400x250/004D40/FFFFFF?text=Pool+Table+5' }
+    ];
+
+    // --- Global State Variables ---
+    let history = []; // Stores all transaction history
+    let tableStates = {}; // Stores the current state of each table { tableId: { startTime, rate, isRunning, ... } }
+    let globalUpdateInterval = null; // A single interval to manage all real-time updates for performance.
+    const managementSectionsIds = ['manage-tables-box', 'manage-players-box', 'player-dues-box', 'delete-table-box', 'summary-section'];
+    let lastActionForUndo = null; // Variable to hold the state for undoing
+
+    // Variables for main search player suggestions
+    let activeSuggestionIndex = -1;
+    let currentSuggestions = [];
+
+    // Global list of all known player names for various suggestion features
+    let allPlayerNamesForSuggestions = [];
+
+
+    // --- Dark Mode Logic ---
+    const darkModeToggle = document.getElementById('dark-mode-toggle');
+    const sunIcon = document.getElementById('sun-icon');
+    const moonIcon = document.getElementById('moon-icon');
+    const htmlElement = document.documentElement;
+
+    function applyDarkMode(isDark) {
+        if (isDark) {
+            htmlElement.classList.add('dark');
+            htmlElement.style.colorScheme = 'dark';
+            sunIcon.classList.add('hidden');
+            moonIcon.classList.remove('hidden');
+        } else {
+            htmlElement.classList.remove('dark');
+            htmlElement.style.colorScheme = 'light';
+            sunIcon.classList.remove('hidden');
+            moonIcon.classList.add('hidden');
+        }
+    }
+
+    function toggleDarkMode() {
+        const isCurrentlyDark = htmlElement.classList.contains('dark');
+        applyDarkMode(!isCurrentlyDark);
+        try {
+            localStorage.setItem('darkMode', !isCurrentlyDark);
+        } catch (e) {
+            console.warn("Could not save dark mode preference to localStorage.", e);
+        }
+    }
+
+    function loadDarkModePreference() {
+        let preference = false;
+        try {
+            const storedPreference = localStorage.getItem('darkMode');
+            if (storedPreference !== null) {
+                preference = storedPreference === 'true';
+            } else {
+                preference = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            }
+        } catch (e) {
+            console.warn("Could not load dark mode preference from localStorage.", e);
+            preference = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        }
+        applyDarkMode(preference);
+    }
+
+    if (darkModeToggle) {
+        darkModeToggle.addEventListener('click', toggleDarkMode);
+    }
+
+    const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
+    prefersDarkScheme.addEventListener('change', (e) => {
+        try {
+            if (localStorage.getItem('darkMode') === null) {
+                applyDarkMode(e.matches);
+            }
+        } catch (e) {
+            console.warn("Error reacting to system dark mode change.", e);
+        }
+    });
+
+    // --- Utility Functions ---
+    function formatCurrency(amount) {
+        const numericAmount = Number(amount);
+        if (isNaN(numericAmount)) return '₹0.00';
+        return `₹${numericAmount.toFixed(2)}`;
+    }
+
+    function formatTime(totalSeconds) {
+        if (isNaN(totalSeconds) || totalSeconds < 0) return '0.0 min';
+        const minutes = totalSeconds / 60;
+        return `${minutes.toFixed(1)} min`;
+    }
+
+    function formatDate(timestamp) {
+        if (!timestamp) return 'N/A';
+        try {
+            return new Date(timestamp).toLocaleString('en-IN', {
+                year: 'numeric', month: 'short', day: 'numeric',
+                hour: 'numeric', minute: '2-digit', hour12: true
+            });
+        } catch (e) {
+            console.error("Error formatting date:", e);
+            return new Date(timestamp).toString(); // Fallback
+        }
+    }
+
+    function displayCurrentDateTime() {
+        const dateTimeElement = document.getElementById('current-datetime');
+        if (dateTimeElement) {
+            const now = new Date();
+            const options = {
+                weekday: 'short', year: 'numeric', month: 'short', day: 'numeric',
+                hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true,
+                timeZone: 'Asia/Kolkata', // IST
+            };
+            try {
+                dateTimeElement.textContent = now.toLocaleString('en-IN', options);
+            } catch (e) {
+                // Fallback for environments that might not support all options perfectly
+                console.error("Error formatting date/time with options:", e);
+                dateTimeElement.textContent = now.toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'medium' });
+            }
+        }
+    }
+
+    function generateUniqueTableId() {
+        let maxIdNum = 0;
+        TABLE_CONFIG.forEach(table => {
+            if (table.id && table.id.startsWith('T')) {
+                const num = parseInt(table.id.substring(1), 10);
+                if (!isNaN(num) && num > maxIdNum) maxIdNum = num;
+            }
+        });
+        return `T${maxIdNum + 1}`;
+    }
+
+    // --- Undo Logic ---
+    function createUndoSnapshot() {
+        try {
+            // Deep copy the current state.
+            lastActionForUndo = {
+                history: JSON.parse(JSON.stringify(history)),
+                tableStates: JSON.parse(JSON.stringify(tableStates)),
+                TABLE_CONFIG: JSON.parse(JSON.stringify(TABLE_CONFIG))
+            };
+            const undoButton = document.getElementById('undo-last-action-btn');
+            if (undoButton) {
+                undoButton.disabled = false;
+            }
+            console.log("Undo snapshot created.");
+        } catch (e) {
+            console.error("Failed to create undo snapshot:", e);
+            lastActionForUndo = null; // Invalidate on error
+        }
+    }
+
+    function undoLastAction() {
+        if (!lastActionForUndo) {
+            showAlert("There is nothing to undo.");
+            return;
+        }
+
+        showCustomConfirm("Are you sure you want to undo the last action? This will revert the last change made.", () => {
+            try {
+                // Restore state from the snapshot
+                history = lastActionForUndo.history;
+                tableStates = lastActionForUndo.tableStates;
+                TABLE_CONFIG = lastActionForUndo.TABLE_CONFIG;
+
+                // Clear the undo state to prevent multiple undos
+                lastActionForUndo = null;
+
+                // Re-render all components of the UI. The global timer will handle running tables automatically.
+                renderTables();
+                renderHistory();
+                refreshPlayerSuggestionSources(); // This updates player lists and dues
+                renderDeleteTableOptions(); // Update delete dropdown in case a table was restored
+
+                // Disable the undo button
+                const undoButton = document.getElementById('undo-last-action-btn');
+                if (undoButton) {
+                    undoButton.disabled = true;
+                }
+
+                saveData(); // Persist the reverted state
+                showAlert("The last action has been undone successfully.");
+                console.log("Undo action successful. State reverted.");
+
+            } catch (e) {
+                console.error("Failed to perform undo action:", e);
+                showAlert("An error occurred while trying to undo the action.");
+            }
+        });
+    }
+
+
+    // --- Data Persistence (localStorage) ---
+    function saveData() {
+        try {
+            // Create a version of tableStates without the intervalId for saving
+            const savableTableStates = {};
+            for (const tableId in tableStates) {
+                const { ...rest } = tableStates[tableId];
+                savableTableStates[tableId] = rest;
+            }
+            localStorage.setItem('snooker_table_config_v3', JSON.stringify(TABLE_CONFIG));
+            localStorage.setItem('snooker_history_v4', JSON.stringify(history));
+            localStorage.setItem('snooker_tableStates_v3', JSON.stringify(savableTableStates));
+            console.log("Data saved to localStorage (v4 history).");
+            refreshPlayerSuggestionSources();
+        } catch (e) {
+            console.error("Error saving data to localStorage:", e);
+            console.warn("Could not save data. Storage might be full or disabled.");
+        }
+    }
+
+    function loadData() {
+        try {
+            const loadedTableConfig = localStorage.getItem('snooker_table_config_v3');
+            TABLE_CONFIG = loadedTableConfig ? JSON.parse(loadedTableConfig) : [...DEFAULT_TABLE_CONFIG];
+            if (!Array.isArray(TABLE_CONFIG)) TABLE_CONFIG = [...DEFAULT_TABLE_CONFIG];
+
+            const loadedHistory = localStorage.getItem('snooker_history_v4');
+            history = loadedHistory ? JSON.parse(loadedHistory) : [];
+            if (!Array.isArray(history)) history = [];
+
+            const loadedTableStatesFromStorage = localStorage.getItem('snooker_tableStates_v3');
+            let parsedLoadedTableStates = {};
+            if (loadedTableStatesFromStorage) {
+                try {
+                    parsedLoadedTableStates = JSON.parse(loadedTableStatesFromStorage);
+                    if (typeof parsedLoadedTableStates !== 'object' || parsedLoadedTableStates === null) parsedLoadedTableStates = {};
+                } catch (e) {
+                    console.warn("Error parsing tableStates from localStorage. Initializing empty.", e);
+                    parsedLoadedTableStates = {};
+                }
+            }
+            
+            const newSanitizedTableStates = {};
+            TABLE_CONFIG.forEach(table => {
+                const existingStateForTable = parsedLoadedTableStates[table.id] || {};
+                newSanitizedTableStates[table.id] = {
+                    startTime: existingStateForTable.startTime || null,
+                    isRunning: typeof existingStateForTable.isRunning === 'boolean' ? existingStateForTable.isRunning : false,
+                    stoppedTime: existingStateForTable.stoppedTime || null,
+                    lastCost: typeof existingStateForTable.lastCost === 'number' ? existingStateForTable.lastCost : 0,
+                    paid: typeof existingStateForTable.paid === 'boolean' ? existingStateForTable.paid : false,
+                    sessionExtraCost: typeof existingStateForTable.sessionExtraCost === 'number' ? existingStateForTable.sessionExtraCost : 0,
+                    rate: table.rate
+                };
+            });
+            tableStates = newSanitizedTableStates;
+            console.log("Data loaded and sanitized from localStorage (v4 history).");
+        } catch (e) {
+            console.error("Error loading data from localStorage:", e);
+            TABLE_CONFIG = [...DEFAULT_TABLE_CONFIG];
+            history = [];
+            tableStates = {};
+            TABLE_CONFIG.forEach(table => {
+                tableStates[table.id] = {
+                    startTime: null, rate: table.rate, isRunning: false,
+                    stoppedTime: null, lastCost: 0, paid: false, sessionExtraCost: 0
+                };
+            });
+            console.warn("Could not load saved data due to an error. Starting with defaults.");
+        }
+        refreshPlayerSuggestionSources();
+    }
+
+    // --- Table Management Functions ---
+    function addNewTable() {
+        const nameInput = document.getElementById('new-table-name');
+        const sizeDescInput = document.getElementById('new-table-size-desc');
+        const rateInput = document.getElementById('new-table-rate');
+        const imageInput = document.getElementById('new-table-image');
+        const name = nameInput.value.trim();
+        const sizeDescription = sizeDescInput.value.trim();
+        const rate = parseFloat(rateInput.value);
+        let image = imageInput.value.trim();
+
+        if (!name) { showAlert("Please enter a table name."); nameInput.focus(); return; }
+        if (!sizeDescription) { showAlert("Please enter a size description."); sizeDescInput.focus(); return; }
+        if (isNaN(rate) || rate <= 0) { showAlert("Please enter a valid positive rate."); rateInput.focus(); return; }
+
+        if (!image) {
+            const placeholderText = encodeURIComponent(name.replace(/\s+/g, '+'));
+            image = `https://placehold.co/400x250/155e75/FFFFFF?text=${placeholderText}`;
+        }
+        createUndoSnapshot();
+        const newTable = {
+            id: generateUniqueTableId(), name: name, sizeDescription: sizeDescription,
+            rate: rate, image: image
+        };
+        TABLE_CONFIG.push(newTable);
+        tableStates[newTable.id] = {
+            startTime: null, rate: rate, isRunning: false,
+            stoppedTime: null, lastCost: 0, paid: false, sessionExtraCost: 0
+        };
+        saveData();
+        renderTables();
+        nameInput.value = ''; sizeDescInput.value = ''; rateInput.value = ''; imageInput.value = '';
+        console.log(`Table "${name}" added successfully.`);
+    }
+
+    function deleteTable(tableId) {
+        const tableToDelete = TABLE_CONFIG.find(t => t.id === tableId);
+        if (!tableToDelete) { console.error("Error: Table not found for deletion."); return; }
+        showCustomConfirm(`Are you sure you want to delete table "${tableToDelete.name}"? This action cannot be undone.`, () => {
+            createUndoSnapshot();
+            TABLE_CONFIG = TABLE_CONFIG.filter(t => t.id !== tableId);
+            if (tableStates[tableId]) {
+                delete tableStates[tableId];
+            }
+            saveData(); 
+            renderTables();
+            renderDeleteTableOptions();
+            console.log(`Table "${tableToDelete.name}" has been deleted.`);
+            showAlert(`Table "${tableToDelete.name}" has been successfully deleted.`);
+        });
+    }
+
+    function handleDeleteTableFromMenu() {
+        const selectEl = document.getElementById('delete-table-select');
+        if (!selectEl || !selectEl.value || selectEl.value === 'none') {
+            showAlert('Please select a table to delete.');
+            return;
+        }
+        const tableIdToDelete = selectEl.value;
+        deleteTable(tableIdToDelete);
+    }
+
+
+    // --- Rendering Functions ---
+    function renderTables() {
+        const container = document.getElementById("tables");
+        if (!container) { console.error("Table container element (#tables) not found!"); return; }
+        container.innerHTML = '';
+        if (TABLE_CONFIG.length === 0) {
+            container.innerHTML = '<p class="text-center text-gray-500 dark:text-gray-400 py-10 col-span-full">No tables configured. Use the Management Actions menu to add some.</p>';
+            return;
+        }
+        const sortedTables = [...TABLE_CONFIG].sort((a, b) => a.name.localeCompare(b.name));
+        sortedTables.forEach(table => {
+            const box = document.createElement("div");
+            box.className = "table-box bg-white dark:bg-gray-700 rounded-lg shadow border border-gray-200 dark:border-gray-600 p-2 flex flex-col transition-colors duration-150 ease-in-out";
+            box.id = `box-${table.id}`;
+            const displayRate = (typeof table.rate === 'number' && !isNaN(table.rate)) ? table.rate : 0;
+            const currentSessionExtras = (tableStates[table.id] && typeof tableStates[table.id].sessionExtraCost === 'number')
+                                                ? tableStates[table.id].sessionExtraCost : 0;
+            box.innerHTML = `
+                <h2 class="text-base font-semibold text-gray-800 dark:text-gray-100 mb-1 truncate">${table.name}</h2>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">(${table.sizeDescription}) - ${formatCurrency(displayRate)}/min</p>
+                <img src="${table.image}" alt="Image of ${table.name}" class="table-image w-full h-24 object-cover rounded-md mb-1 border border-gray-100 dark:border-gray-600" onerror="this.onerror=null; this.src='https://placehold.co/400x250/cccccc/FFFFFF?text=Image+Error'; this.alt='Image loading error';">
+                <div class="text-sm space-y-1 mb-1 flex-grow">
+                    <p><strong class="font-medium text-gray-600 dark:text-gray-300">Status:</strong> <span id="status-${table.id}" class="font-semibold">Idle</span></p>
+                    <p><strong class="font-medium text-gray-600 dark:text-gray-300">Play Time:</strong> <span id="time-${table.id}">0.0 min</span></p>
+                    <p><strong class="font-medium text-gray-600 dark:text-gray-300">Table Cost:</strong> <span id="cost-${table.id}">${formatCurrency(0)}</span></p>
+                    <p><strong class="font-medium text-gray-600 dark:text-gray-300">Session Extras:</strong> <span id="session-extras-${table.id}">${formatCurrency(currentSessionExtras)}</span></p>
+                    <p><strong class="font-medium text-gray-600 dark:text-gray-300">Total:</strong> <span id="amount-pending-${table.id}" class="font-bold text-red-600 dark:text-red-400 print-text-red-600">${formatCurrency(0)}</span></p>
+                </div>
+                <div id="session-item-adder-${table.id}" class="mt-2 mb-2 space-y-2 border-t dark:border-gray-600 pt-2" style="display:none;">
+                    <label for="extra-item-amount-${table.id}" class="block text-xs font-medium text-gray-700 dark:text-gray-300">Add Item (₹):</label>
+                    <div class="flex items-center space-x-2">
+                        <input type="number" id="extra-item-amount-${table.id}" placeholder="Amount" min="0" step="0.01" class="flex-grow block w-full px-2 py-1 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-600 dark:text-gray-100 dark:placeholder-gray-400 sm:text-xs"/>
+                        <button onclick="addExtraItemToTable('${table.id}')" id="add-session-item-btn-${table.id}" class="text-xs inline-flex justify-center py-1 px-2 border border-transparent shadow-sm font-medium rounded-md text-white bg-teal-600 hover:bg-teal-700 dark:bg-teal-500 dark:hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition duration-150 ease-in-out">Add</button>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 mt-1">
+                         <button onclick="addExtraItemToTable('${table.id}', 15)" class="text-xs inline-flex justify-center py-1 px-2 border border-gray-300 dark:border-gray-500 shadow-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-600 hover:bg-gray-50 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out">₹15</button>
+                         <button onclick="addExtraItemToTable('${table.id}', 25)" class="text-xs inline-flex justify-center py-1 px-2 border border-gray-300 dark:border-gray-500 shadow-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-600 hover:bg-gray-50 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out">₹25</button>
+                    </div>
+                </div>
+                <div id="payment-info-${table.id}" class="mt-2 mb-2 space-y-2" style="display:none;">
+                    <label for="losing-player-${table.id}" class="block text-xs font-medium text-gray-700 dark:text-gray-300">Player(s) Name:</label>
+                    <div class="relative">
+                        <input type="text" id="losing-player-${table.id}" placeholder="Name or Name1 / Name2"
+                               oninput="handleLosingPlayerInputChange(event, '${table.id}')"
+                               onfocus="handleLosingPlayerInputFocus(event, '${table.id}')"
+                               onblur="handleLosingPlayerInputBlur(event, '${table.id}')"
+                               autocomplete="off"
+                               class="block w-full px-2 py-1 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-600 dark:text-gray-100 dark:placeholder-gray-400 sm:text-sm"/>
+                        <div id="losing-player-suggestions-${table.id}" class="player-suggestion-box absolute z-20 w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-b-md mt-0 shadow-lg max-h-48 overflow-y-auto" style="display: none; top: 100%;"></div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 mt-2">
+                        <button onclick="submitPayment('${table.id}')" class="w-full text-xs inline-flex justify-center py-1 px-3 border border-transparent shadow-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 dark:bg-orange-500 dark:hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition duration-150 ease-in-out">Add to Dues</button>
+                        <button onclick="markAsPaid('${table.id}')" class="w-full text-xs inline-flex justify-center py-1 px-3 border border-transparent shadow-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150 ease-in-out">Mark as Paid</button>
+                    </div>
+                </div>
+                <div class="table-controls grid grid-cols-3 gap-2 mb-1">
+                    <button id="start-btn-${table.id}" class="text-xs inline-flex justify-center py-1 px-2 border border-transparent shadow-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed" onclick="startTimer('${table.id}')">Start</button>
+                    <button id="stop-btn-${table.id}" class="text-xs inline-flex justify-center py-1 px-2 border border-transparent shadow-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed" onclick="stopTimer('${table.id}')" disabled>Stop</button>
+                    <button id="reset-btn-${table.id}" class="text-xs inline-flex justify-center py-1 px-2 border border-transparent shadow-sm font-medium rounded-md text-white bg-yellow-500 hover:bg-yellow-600 dark:bg-yellow-600 dark:hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-400 disabled:opacity-50 disabled:cursor-not-allowed" onclick="resetTable('${table.id}')">Reset</button>
+                </div>
+            `;
+            container.appendChild(box);
+            updateTableUI(table.id);
+        });
+    }
+
+    function updateTableUI(tableId) {
+        const state = tableStates[tableId];
+        const tableBox = document.getElementById(`box-${tableId}`);
+        if (!tableBox || !state) { console.warn(`Cannot update UI for table ${tableId}: Table box or state not found.`); return; }
+        const startBtn = document.getElementById(`start-btn-${tableId}`);
+        const stopBtn = document.getElementById(`stop-btn-${tableId}`);
+        const resetBtn = document.getElementById(`reset-btn-${tableId}`);
+        const statusEl = document.getElementById(`status-${tableId}`);
+        const timeEl = document.getElementById(`time-${tableId}`);
+        const costEl = document.getElementById(`cost-${tableId}`);
+        const sessionExtrasEl = document.getElementById(`session-extras-${tableId}`);
+        const pendingAmountEl = document.getElementById(`amount-pending-${tableId}`);
+        const paymentInfoEl = document.getElementById(`payment-info-${tableId}`);
+        const sessionItemAdderEl = document.getElementById(`session-item-adder-${tableId}`);
+        const addSessionItemBtn = document.getElementById(`add-session-item-btn-${tableId}`);
+
+        if (!startBtn || !stopBtn || !resetBtn || !statusEl || !timeEl || !costEl || !paymentInfoEl || !pendingAmountEl || !sessionExtrasEl || !sessionItemAdderEl || !addSessionItemBtn) {
+            console.warn(`UI elements missing for table ${tableId}. Cannot update UI fully.`); return;
+        }
+        tableBox.classList.remove(
+            'bg-green-50', 'dark:bg-green-900/60', 'border-l-4', 'border-green-500', 'dark:border-green-400', 'print-bg-green-100', 'print-border-green-500',
+            'bg-yellow-50', 'dark:bg-yellow-800/60', 'border-yellow-500', 'dark:border-yellow-400', 'print-bg-yellow-100', 'print-border-yellow-500',
+            'bg-blue-50', 'dark:bg-blue-900/60', 'border-blue-500', 'dark:border-blue-400', 'print-bg-blue-100', 'print-border-blue-500'
+        );
+        tableBox.classList.add('bg-white', 'dark:bg-gray-700', 'border', 'border-gray-200', 'dark:border-gray-600');
+        let statusText = "Idle";
+        const currentSessionExtras = state.sessionExtraCost || 0;
+        sessionExtrasEl.textContent = formatCurrency(currentSessionExtras);
+
+        if (state.isRunning) {
+            statusText = "Running";
+            tableBox.classList.remove('bg-white', 'dark:bg-gray-700', 'border-gray-200', 'dark:border-gray-600');
+            tableBox.classList.add('bg-green-50', 'dark:bg-green-900/60', 'border-l-4', 'border-green-500', 'dark:border-green-400', 'print-bg-green-100', 'print-border-green-500');
+            startBtn.disabled = true; stopBtn.disabled = false; resetBtn.disabled = true;
+            paymentInfoEl.style.display = 'none';
+            sessionItemAdderEl.style.display = 'block';
+            addSessionItemBtn.disabled = false;
+            pendingAmountEl.textContent = formatCurrency(0);
+        } else if (state.stoppedTime && !state.paid) {
+            statusText = "Stopped";
+            tableBox.classList.remove('bg-white', 'dark:bg-gray-700', 'border-gray-200', 'dark:border-gray-600');
+            tableBox.classList.add('bg-yellow-50', 'dark:bg-yellow-800/60', 'border-l-4', 'border-yellow-500', 'dark:border-yellow-400', 'print-bg-yellow-100', 'print-border-yellow-500');
+            startBtn.disabled = true; stopBtn.disabled = true; resetBtn.disabled = false;
+            paymentInfoEl.style.display = 'block';
+            sessionItemAdderEl.style.display = 'block';
+            addSessionItemBtn.disabled = false;
+            const elapsedSeconds = state.startTime ? Math.floor((state.stoppedTime - state.startTime) / 1000) : 0;
+            timeEl.textContent = `${formatTime(elapsedSeconds)} (Stopped)`;
+            costEl.textContent = formatCurrency(state.lastCost || 0);
+            pendingAmountEl.textContent = formatCurrency((state.lastCost || 0) + currentSessionExtras);
+        } else {
+            statusText = state.paid ? "Paid" : "Idle";
+            if (state.paid) {
+                tableBox.classList.remove('bg-white', 'dark:bg-gray-700', 'border-gray-200', 'dark:border-gray-600');
+                tableBox.classList.add('bg-blue-50', 'dark:bg-blue-900/60', 'border-l-4', 'border-blue-500', 'dark:border-blue-400', 'print-bg-blue-100', 'print-border-blue-500');
+            }
+            timeEl.textContent = '0.0 min'; costEl.textContent = formatCurrency(0);
+            sessionExtrasEl.textContent = formatCurrency(0); pendingAmountEl.textContent = formatCurrency(0);
+            startBtn.disabled = false; stopBtn.disabled = true; resetBtn.disabled = !state.paid;
+            paymentInfoEl.style.display = 'none'; sessionItemAdderEl.style.display = 'none';
+            addSessionItemBtn.disabled = true;
+        }
+        statusEl.textContent = statusText;
+    }
+
+    function renderHistory(filters = {}) {
+        const historyList = document.getElementById('history-list');
+        if (!historyList) { console.error("History list element (#history-list) not found!"); return; }
+        historyList.innerHTML = '';
+        const { playerName, startDate, endDate } = filters;
+        const normalizedPlayerName = playerName ? playerName.trim().toLowerCase() : '';
+        const filteredHistory = history.filter(item => {
+            if (!item || !item.timestamp) return false;
+            if (normalizedPlayerName) {
+                const itemPlayer = (item.type === 'session' ? item.losingPlayer : item.player) || '';
+                if (!itemPlayer.toLowerCase().includes(normalizedPlayerName)) return false;
+            }
+            const itemDate = new Date(item.timestamp); itemDate.setHours(0, 0, 0, 0);
+            if (startDate) {
+                const filterStartDate = new Date(startDate); filterStartDate.setHours(0, 0, 0, 0);
+                if (itemDate < filterStartDate) return false;
+            }
+            if (endDate) {
+                const filterEndDate = new Date(endDate); filterEndDate.setHours(0, 0, 0, 0);
+                if (itemDate > filterEndDate) return false;
+            }
+            return true;
+        });
+        const sortedHistory = filteredHistory.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+        if (sortedHistory.length === 0) {
+            historyList.innerHTML = '<p class="text-gray-500 dark:text-gray-400 text-center py-4">No transactions match the current filter.</p>';
+            return;
+        }
+        sortedHistory.forEach(item => {
+            const div = document.createElement("div");
+            div.className = 'history-item bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md p-4 text-sm text-gray-700 dark:text-gray-200';
+            let content = `<p class="mb-1"><strong class="font-medium text-gray-600 dark:text-gray-300">Date:</strong> ${formatDate(item.timestamp)}</p>`;
+            const tableInfo = TABLE_CONFIG.find(t => t.id === item.tableId);
+            const tableName = tableInfo ? tableInfo.name : (item.tableId || 'Unknown Table');
+            if (item.type === 'session') {
+                content += `<p class="mb-1"><strong class="font-medium text-gray-600 dark:text-gray-300">Type:</strong> Game Session</p>`;
+                content += `<p class="mb-1"><strong class="font-medium text-gray-600 dark:text-gray-300">Table:</strong> ${tableName}</p>`;
+                content += `<p class="mb-1"><strong class="font-medium text-gray-600 dark:text-gray-300">Player:</strong> ${item.losingPlayer || 'N/A'}</p>`;
+                
+                let durationText = '';
+                if (typeof item.gameDurationSeconds === 'number') {
+                    durationText = `Game Time: ${formatTime(item.gameDurationSeconds)}. `;
+                }
+                
+                const playerTableUsageShare = item.tableUsageShare !== undefined ? item.tableUsageShare : item.amount - (item.sessionExtraCost || 0);
+                if (typeof item.sessionExtraCost === 'number' && item.sessionExtraCost > 0) {
+                    content += `<p class="mb-1"><strong class="font-medium text-gray-600 dark:text-gray-300">Player's Share of Table Cost:</strong> ${formatCurrency(playerTableUsageShare)}</p>`;
+                    content += `<p class="mb-1"><strong class="font-medium text-gray-600 dark:text-gray-300">Player's Share of Extras:</strong> ${formatCurrency(item.sessionExtraCost)}</p>`;
+                }
+                content += `<p class="mb-1"><strong class="font-medium text-gray-600 dark:text-gray-300">Game Details:</strong> ${durationText}</p>`;
+                content += `<p><strong class="font-medium text-gray-600 dark:text-gray-300">Player's Total Owed:</strong> <span class="font-semibold text-red-600 dark:text-red-400 print-text-red-600">${formatCurrency(item.amount)}</span></p>`;
+            } else if (item.type === 'manual') {
+                content += `<p class="mb-1"><strong class="font-medium text-gray-600 dark:text-gray-300">Type:</strong> Manual Payment</p>`;
+                content += `<p class="mb-1"><strong class="font-medium text-gray-600 dark:text-gray-300">Player:</strong> ${item.player || 'N/A'}</p>`;
+                content += `<p><strong class="font-medium text-gray-600 dark:text-gray-300">Amount Paid:</strong> <span class="font-semibold text-green-600 dark:text-green-400 print-text-green-600">${formatCurrency(item.amount)}</span></p>`;
+            } else if (item.type === 'general_extra') {
+                content += `<p class="mb-1"><strong class="font-medium text-gray-600 dark:text-gray-300">Type:</strong> General Item Added</p>`;
+                content += `<p class="mb-1"><strong class="font-medium text-gray-600 dark:text-gray-300">Player:</strong> ${item.player || 'N/A'}</p>`;
+                content += `<p><strong class="font-medium text-gray-600 dark:text-gray-300">Item Amount:</strong> <span class="font-semibold text-red-600 dark:text-red-400 print-text-red-600">${formatCurrency(item.amount)}</span></p>`;
+            } else {
+                content += `<p><strong class="font-medium text-gray-600 dark:text-gray-300">Type:</strong> Unknown Transaction</p>`;
+            }
+            div.innerHTML = content;
+            historyList.appendChild(div);
+        });
+    }
+
+    function refreshPlayerSuggestionSources() {
+        const playerSet = new Set();
+        history.forEach(item => {
+            if (item.type === 'session' && item.losingPlayer) {
+                item.losingPlayer.split('/').forEach(p => playerSet.add(p.trim()));
+            }
+            if (item.type === 'manual' && item.player) playerSet.add(item.player);
+            if (item.type === 'general_extra' && item.player) playerSet.add(item.player);
+        });
+
+        allPlayerNamesForSuggestions = Array.from(playerSet).filter(name => name.trim() !== "").sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+
+        const datalist = document.getElementById('player-list');
+        if (datalist) {
+            datalist.innerHTML = '';
+            allPlayerNamesForSuggestions.forEach(playerName => {
+                const option = document.createElement('option');
+                option.value = playerName;
+                datalist.appendChild(option);
+            });
+        }
+        const playerDuesBox = document.getElementById('player-dues-box');
+        if (playerDuesBox && !playerDuesBox.classList.contains('hidden-section')) {
+            renderPlayerDuesSection();
+        }
+        const managePlayersBox = document.getElementById('manage-players-box');
+        if (managePlayersBox && !managePlayersBox.classList.contains('hidden-section')) {
+            renderManagePlayersSection();
+        }
+        console.log("Player suggestion sources refreshed.");
+    }
+
+
+    // --- Table Timer Logic ---
+    function startTimer(tableId) {
+        if (tableStates[tableId] && tableStates[tableId].isRunning) return;
+        const tableConfig = TABLE_CONFIG.find(t => t.id === tableId);
+        if (!tableConfig || typeof tableConfig.rate !== 'number' || isNaN(tableConfig.rate)) {
+            showAlert(`Cannot start timer: Configuration or rate is missing/invalid for table ${tableId}.`);
+            return;
+        }
+        const rate = tableConfig.rate;
+        tableStates[tableId] = {
+            ...tableStates[tableId],
+            startTime: Date.now(),
+            rate: rate,
+            isRunning: true,
+            stoppedTime: null,
+            lastCost: 0,
+            paid: false,
+            sessionExtraCost: 0
+        };
+        updateLiveTimer(tableId);
+        updateTableUI(tableId);
+        saveData();
+    }
+
+    function updateLiveTimer(tableId) {
+        const state = tableStates[tableId];
+        if (!state || !state.startTime || !state.isRunning || typeof state.rate !== 'number' || isNaN(state.rate)) {
+            return;
+        }
+        const elapsedSeconds = Math.floor((Date.now() - state.startTime) / 1000);
+        let effectiveElapsedSecondsForCost = elapsedSeconds;
+        if (elapsedSeconds < MINIMUM_CHARGE_DURATION_SECONDS) { effectiveElapsedSecondsForCost = MINIMUM_CHARGE_DURATION_SECONDS; }
+        const currentTableCost = (effectiveElapsedSecondsForCost / 60) * state.rate;
+        const timeEl = document.getElementById(`time-${tableId}`);
+        const costEl = document.getElementById(`cost-${tableId}`);
+        if (timeEl) timeEl.textContent = formatTime(elapsedSeconds);
+        if (costEl) costEl.textContent = formatCurrency(currentTableCost);
+    }
+
+    function stopTimer(tableId) {
+        const state = tableStates[tableId];
+        if (!state || !state.isRunning) return;
+        state.isRunning = false; 
+        state.stoppedTime = Date.now();
+        const elapsedSeconds = state.startTime ? Math.floor((state.stoppedTime - state.startTime) / 1000) : 0;
+        let effectiveElapsedSecondsForCost = elapsedSeconds;
+        if (elapsedSeconds < MINIMUM_CHARGE_DURATION_SECONDS) { effectiveElapsedSecondsForCost = MINIMUM_CHARGE_DURATION_SECONDS; }
+        const finalTableCost = (state.startTime && typeof state.rate === 'number' && !isNaN(state.rate))
+                                         ? (effectiveElapsedSecondsForCost / 60) * state.rate : 0;
+        state.lastCost = finalTableCost;
+        updateTableUI(tableId); 
+        saveData();
+    }
+
+    function resetTable(tableId, isPaymentSuccess = false) {
+        const state = tableStates[tableId];
+        const tableConfig = TABLE_CONFIG.find(t => t.id === tableId);
+        const currentRate = tableConfig ? tableConfig.rate : null;
+        tableStates[tableId] = {
+            startTime: null, rate: currentRate, isRunning: false,
+            stoppedTime: null, lastCost: 0, paid: isPaymentSuccess, sessionExtraCost: 0
+        };
+        const losingPlayerInput = document.getElementById(`losing-player-${tableId}`);
+        if(losingPlayerInput) losingPlayerInput.value = '';
+        const sessionItemAmountInput = document.getElementById(`extra-item-amount-${tableId}`);
+        if(sessionItemAmountInput) sessionItemAmountInput.value = '';
+        updateTableUI(tableId);
+        if(isPaymentSuccess){
+            setTimeout(() => {
+                if (tableStates[tableId]) {
+                    tableStates[tableId].paid = false;
+                    updateTableUI(tableId); 
+                    saveData();
+                }
+            }, 2000);
+        } else {
+            if (tableStates[tableId]) tableStates[tableId].paid = false;
+            updateTableUI(tableId); 
+            saveData();
+        }
+    }
+
+    function submitPayment(tableId) {
+        const losingPlayerInputEl = document.getElementById(`losing-player-${tableId}`);
+        const rawLosingPlayerInput = losingPlayerInputEl.value.trim();
+        const state = tableStates[tableId];
+        if (!rawLosingPlayerInput) {
+            showAlert('Please enter the player\'s name(s). Use "/" to separate multiple players.');
+            losingPlayerInputEl.focus(); return;
+        }
+        if (!state || typeof state.lastCost !== 'number' || state.lastCost < 0 || state.isRunning || state.paid) {
+            showAlert('Cannot add to dues. Ensure the timer is stopped and payment hasn\'t already been submitted.'); return;
+        }
+        
+        createUndoSnapshot();
+
+        const losingPlayerNames = rawLosingPlayerInput.split('/').map(name => name.trim()).filter(name => name.length > 0);
+        if (losingPlayerNames.length === 0) {
+            showAlert('No valid player names entered. Please check the input.');
+            losingPlayerInputEl.focus(); return;
+        }
+        const totalSessionExtraCost = state.sessionExtraCost || 0;
+        const totalTableUsageCost = state.lastCost;
+        const grandTotalAmountOwed = totalTableUsageCost + totalSessionExtraCost;
+        const numPlayers = losingPlayerNames.length;
+        const amountPerPlayer = grandTotalAmountOwed / numPlayers;
+        const sessionExtraCostPerPlayer = totalSessionExtraCost / numPlayers;
+        const tableUsageCostPerPlayer = totalTableUsageCost / numPlayers;
+        const gameDurationSeconds = (state.startTime && state.stoppedTime)
+                                           ? Math.floor((state.stoppedTime - state.startTime) / 1000) : 0;
+        losingPlayerNames.forEach(playerName => {
+            history.push({
+                type: 'session', tableId: tableId, losingPlayer: playerName, amount: amountPerPlayer,
+                sessionExtraCost: sessionExtraCostPerPlayer, tableUsageShare: tableUsageCostPerPlayer,
+                gameDurationSeconds: gameDurationSeconds, timestamp: Date.now()
+            });
+            console.log(`Due of ${formatCurrency(amountPerPlayer)} (Table Share: ${formatCurrency(tableUsageCostPerPlayer)}, Extras Share: ${formatCurrency(sessionExtraCostPerPlayer)}, Duration: ${gameDurationSeconds}s) for player ${playerName} recorded.`);
+        });
+        resetTable(tableId, true);
+        renderHistory();
+        updateManualPaymentDueOnTheFly();
+        saveData();
+    }
+
+    function markAsPaid(tableId) {
+        const losingPlayerInputEl = document.getElementById(`losing-player-${tableId}`);
+        const rawLosingPlayerInput = losingPlayerInputEl.value.trim();
+        const state = tableStates[tableId];
+
+        if (!rawLosingPlayerInput) {
+            showAlert('Please enter the player\'s name(s). Use "/" to separate multiple players.');
+            losingPlayerInputEl.focus();
+            return;
+        }
+
+        if (!state || typeof state.lastCost !== 'number' || state.lastCost < 0 || state.isRunning || state.paid) {
+            showAlert('Cannot mark as paid. Ensure the timer is stopped and payment hasn\'t already been submitted.');
+            return;
+        }
+
+        createUndoSnapshot();
+
+        const playerNames = rawLosingPlayerInput.split('/').map(name => name.trim()).filter(name => name.length > 0);
+        if (playerNames.length === 0) {
+            showAlert('No valid player names entered. Please check the input.');
+            losingPlayerInputEl.focus();
+            return;
+        }
+
+        const totalSessionExtraCost = state.sessionExtraCost || 0;
+        const totalTableUsageCost = state.lastCost;
+        const grandTotalAmount = totalTableUsageCost + totalSessionExtraCost;
+        const amountPerPlayer = grandTotalAmount / playerNames.length;
+        const sessionExtraCostPerPlayer = totalSessionExtraCost / playerNames.length;
+        const tableUsageCostPerPlayer = totalTableUsageCost / playerNames.length;
+        const gameDurationSeconds = (state.startTime && state.stoppedTime)
+                                           ? Math.floor((state.stoppedTime - state.startTime) / 1000) : 0;
+        const now = Date.now();
+
+        playerNames.forEach(playerName => {
+            history.push({
+                type: 'session',
+                tableId: tableId,
+                losingPlayer: playerName,
+                amount: amountPerPlayer,
+                sessionExtraCost: sessionExtraCostPerPlayer,
+                tableUsageShare: tableUsageCostPerPlayer,
+                gameDurationSeconds: gameDurationSeconds,
+                timestamp: now
+            });
+            history.push({
+                type: 'manual',
+                player: playerName,
+                amount: amountPerPlayer,
+                timestamp: now + 1
+            });
+            console.log(`Session for player ${playerName} of ${formatCurrency(amountPerPlayer)} was recorded and immediately marked as paid.`);
+        });
+
+        resetTable(tableId, true);
+        renderHistory();
+        updateManualPaymentDueOnTheFly();
+        saveData();
+    }
+
+
+    function addExtraItemToTable(tableId, presetAmount) {
+        const state = tableStates[tableId];
+        if (!state || state.paid || (!state.isRunning && !state.stoppedTime) ) {
+            showAlert("Cannot add item. Table session must be active or stopped (awaiting payment)."); return;
+        }
+
+        let amount;
+        const amountInput = document.getElementById(`extra-item-amount-${tableId}`);
+
+        if (presetAmount !== undefined && presetAmount !== null) {
+            amount = parseFloat(presetAmount);
+        } else {
+            amount = parseFloat(amountInput.value);
+        }
+
+        if (isNaN(amount) || amount <= 0) {
+            showAlert("Please enter or select a valid positive amount for the item.");
+            if (presetAmount === undefined || presetAmount === null) {
+                amountInput.focus();
+            }
+            return;
+        }
+        
+        state.sessionExtraCost = (state.sessionExtraCost || 0) + amount;
+        amountInput.value = '';
+        updateTableUI(tableId);
+        saveData();
+        console.log(`Added ${formatCurrency(amount)} to session extras for table ${tableId}. New session extras total: ${formatCurrency(state.sessionExtraCost)}`);
+    }
+
+    // --- General Item and Manual Payment Functions ---
+    function setGeneralItemAmount(amount) {
+        const amountInput = document.getElementById('extra-item-amount');
+        if (amountInput) {
+            amountInput.value = amount;
+        }
+    }
+
+    function addGeneralExtraItem(playerNameFromArg, amountFromArg, playerNameInputToClear = null, amountInputToClear = null) {
+        const playerName = playerNameFromArg ? playerNameFromArg.trim() : "";
+        const amount = parseFloat(amountFromArg);
+        if (!playerName) {
+            showAlert("Player name is required.");
+            if(playerNameInputToClear) playerNameInputToClear.focus(); return;
+        }
+        if (isNaN(amount) || amount <= 0) {
+            showAlert("Please enter a valid positive amount.");
+            if(amountInputToClear) amountInputToClear.focus(); return;
+        }
+        
+        createUndoSnapshot();
+
+        const existingPlayerKey = allPlayerNamesForSuggestions.find(name => name.toLowerCase() === playerName.toLowerCase());
+        const playerKeyToUse = existingPlayerKey || playerName;
+        
+        history.push({ type: 'general_extra', player: playerKeyToUse, amount: amount, timestamp: Date.now() });
+        console.log(`Added general item ${formatCurrency(amount)} to ${playerKeyToUse}.`);
+        if (playerNameInputToClear) playerNameInputToClear.value = '';
+        if (amountInputToClear) amountInputToClear.value = '';
+        updateManualPaymentDueOnTheFly();
+        saveData();
+    }
+
+    function handleAddGeneralItemToDues() {
+        const playerNameInput = document.getElementById('extra-item-player');
+        const amountInput = document.getElementById('extra-item-amount');
+        addGeneralExtraItem(playerNameInput.value, amountInput.value, playerNameInput, amountInput);
+    }
+
+    function handleMarkGeneralItemAsPaid() {
+        const playerNameInput = document.getElementById('extra-item-player');
+        const amountInput = document.getElementById('extra-item-amount');
+        const playerName = playerNameInput.value.trim();
+        const amount = parseFloat(amountInput.value);
+
+        if (!playerName) {
+            showAlert("Player name is required.");
+            playerNameInput.focus();
+            return;
+        }
+        if (isNaN(amount) || amount <= 0) {
+            showAlert("Please enter a valid positive amount.");
+            amountInput.focus();
+            return;
+        }
+
+        createUndoSnapshot();
+
+        const existingPlayerKey = allPlayerNamesForSuggestions.find(name => name.toLowerCase() === playerName.toLowerCase());
+        const playerKeyToUse = existingPlayerKey || playerName;
+
+        const now = Date.now();
+        history.push({
+            type: 'general_extra',
+            player: playerKeyToUse,
+            amount: amount,
+            timestamp: now
+        });
+        history.push({
+            type: 'manual',
+            player: playerKeyToUse,
+            amount: amount,
+            timestamp: now + 1
+        });
+
+        console.log(`General item for player ${playerKeyToUse} of ${formatCurrency(amount)} was recorded and immediately marked as paid.`);
+
+        playerNameInput.value = '';
+        amountInput.value = '';
+        saveData();
+        renderHistory();
+        updateManualPaymentDueOnTheFly();
+    }
+
+
+    // --- Balance and Payment Logic ---
+    function getPlayerBalance(playerNameQuery, startDate = null, endDate = null) {
+        const normalizedQuery = playerNameQuery.trim().toLowerCase();
+        if (!normalizedQuery) {
+            return { balance: 0, className: 'text-green-600 dark:text-green-400 print-text-green-600', text: formatCurrency(0), transactionsExist: false };
+        }
+        let totalDue = 0; let transactionsExist = false;
+        if (Array.isArray(history)) {
+            history.forEach(item => {
+                if (!item || !item.type || typeof item.amount !== 'number' || isNaN(item.amount) || !item.timestamp) return;
+
+                const itemPlayerName = (item.player || item.losingPlayer || "").toLowerCase();
+                if (itemPlayerName === normalizedQuery) {
+                    const itemDate = new Date(item.timestamp);
+                    itemDate.setHours(0, 0, 0, 0);
+
+                    let inDateRange = true;
+                    if (startDate) {
+                        const filterStartDate = new Date(startDate);
+                        filterStartDate.setHours(0,0,0,0);
+                        if (itemDate < filterStartDate) inDateRange = false;
+                    }
+                    if (endDate) {
+                        const filterEndDate = new Date(endDate);
+                        filterEndDate.setHours(0,0,0,0);
+                        if (itemDate > filterEndDate) inDateRange = false;
+                    }
+
+                    if (inDateRange) {
+                        transactionsExist = true;
+                        if (item.type === 'session' || item.type === 'general_extra') { totalDue += item.amount; }
+                        else if (item.type === 'manual') { totalDue -= item.amount; }
+                    }
+                }
+            });
+        }
+        let className = 'text-green-600 dark:text-green-400 print-text-green-600';
+        let text = formatCurrency(totalDue);
+        if (totalDue > 0.005) {
+            className = 'text-red-600 dark:text-red-400 print-text-red-600';
+        } else if (totalDue < -0.005) {
+            text = `${formatCurrency(Math.abs(totalDue))} (Credit)`;
+        } else {
+            text = formatCurrency(0);
+        }
+        return { balance: totalDue, className: className, text: text, transactionsExist: transactionsExist };
+    }
+
+    function updateManualPaymentDue() {
+        const playerNameInput = document.getElementById('manual-payment-player');
+        const dueAmountEl = document.getElementById('manual-payment-player-due');
+        if (!playerNameInput || !dueAmountEl) return;
+        const playerName = playerNameInput.value;
+        const balanceDetails = getPlayerBalance(playerName);
+        dueAmountEl.textContent = balanceDetails.text;
+        dueAmountEl.classList.remove('text-red-600', 'dark:text-red-400', 'text-green-600', 'dark:text-green-400', 'print-text-red-600', 'print-text-green-600');
+        dueAmountEl.classList.add(...balanceDetails.className.split(' '));
+    }
+
+    function updateManualPaymentDueOnTheFly() {
+        const manualPaymentPlayerInput = document.getElementById('manual-payment-player');
+        if (manualPaymentPlayerInput && manualPaymentPlayerInput.value.trim()) { updateManualPaymentDue(); }
+    }
+
+    function recordManualPayment() {
+        const playerNameInput = document.getElementById('manual-payment-player');
+        const amountInput = document.getElementById('manual-payment-amount');
+        const playerName = playerNameInput.value.trim();
+        const amount = parseFloat(amountInput.value);
+        if (!playerName) { showAlert("Please enter the player's name."); playerNameInput.focus(); return; }
+        if (isNaN(amount) || amount <= 0) { showAlert("Please enter a valid positive amount paid."); amountInput.focus(); return; }
+        
+        createUndoSnapshot();
+
+        history.push({ type: 'manual', player: playerName, amount: amount, timestamp: Date.now() });
+        console.log(`Recorded manual payment of ${formatCurrency(amount)} from ${playerName}.`);
+        amountInput.value = '';
+        renderHistory();
+        updateManualPaymentDue();
+        saveData();
+    }
+
+    // --- History Filtering ---
+    function applyHistoryFilter() {
+        const playerName = document.getElementById('filter-player-name').value;
+        const startDate = document.getElementById('filter-start-date').value;
+        const endDate = document.getElementById('filter-end-date').value;
+        renderHistory({ playerName, startDate, endDate });
+    }
+
+    function clearHistoryFilter() {
+        document.getElementById('filter-player-name').value = '';
+        document.getElementById('filter-start-date').value = '';
+        document.getElementById('filter-end-date').value = '';
+        renderHistory();
+    }
+
+    // --- Player Name Suggestions ---
+    function showPlayerNameSuggestions(inputElementId, suggestionsElementId) {
+        const inputElement = document.getElementById(inputElementId);
+        const suggestionsElement = document.getElementById(suggestionsElementId);
+        const query = inputElement.value.trim().toLowerCase();
+        if (!suggestionsElement) return;
+        if (query.length < 1) {
+            suggestionsElement.innerHTML = ''; suggestionsElement.style.display = 'none';
+            currentSuggestions = []; activeSuggestionIndex = -1; return;
+        }
+
+        currentSuggestions = allPlayerNamesForSuggestions
+            .filter(name => name.toLowerCase().includes(query))
+            .sort((a, b) => a.toLowerCase().startsWith(query) ? -1 : b.toLowerCase().startsWith(query) ? 1 : a.localeCompare(b));
+
+        suggestionsElement.innerHTML = '';
+        if (currentSuggestions.length > 0) {
+            currentSuggestions.forEach((name, index) => {
+                const suggestionItem = document.createElement('div');
+                suggestionItem.className = 'px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer';
+                suggestionItem.textContent = name;
+                suggestionItem.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    inputElement.value = name; suggestionsElement.innerHTML = ''; suggestionsElement.style.display = 'none';
+                    currentSuggestions = []; activeSuggestionIndex = -1; inputElement.focus();
+                    if (inputElementId === 'manual-payment-player') updateManualPaymentDue();
+                });
+                suggestionsElement.appendChild(suggestionItem);
+            });
+            suggestionsElement.style.display = 'block';
+        } else {
+            suggestionsElement.innerHTML = '<div class="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">No matching players found.</div>';
+            suggestionsElement.style.display = 'block'; currentSuggestions = []; activeSuggestionIndex = -1;
+        }
+    }
+
+    function hidePlayerNameSuggestions(suggestionsElementId) {
+        const suggestionsElement = document.getElementById(suggestionsElementId);
+        if (suggestionsElement) {
+            suggestionsElement.innerHTML = ''; suggestionsElement.style.display = 'none';
+            currentSuggestions = []; activeSuggestionIndex = -1;
+        }
+    }
+
+    // --- Specific Input Handlers for Losing Player Suggestions ---
+    function handleLosingPlayerInputChange(event, tableId) {
+        const inputElement = event.target;
+        inputElement.dataset.lastAction = 'input';
+        inputElement.dataset.lastCursorPos = String(inputElement.selectionStart);
+        const suggestionsBox = document.getElementById(`losing-player-suggestions-${tableId}`);
+        if (!suggestionsBox) return;
+
+        const value = inputElement.value;
+        const cursorPosition = inputElement.selectionStart;
+
+        let currentSegment = '';
+        const textBeforeCursor = value.substring(0, cursorPosition);
+        const lastSlashIndex = textBeforeCursor.lastIndexOf('/');
+
+        if (lastSlashIndex === -1) {
+            currentSegment = textBeforeCursor;
+        } else {
+            currentSegment = textBeforeCursor.substring(lastSlashIndex + 1);
+        }
+        currentSegment = currentSegment.trimStart();
+
+        if (currentSegment.length > 0) {
+            displayLosingPlayerSuggestions(currentSegment, suggestionsBox, inputElement);
+        } else {
+            suggestionsBox.innerHTML = '';
+            suggestionsBox.style.display = 'none';
+        }
+    }
+
+    function handleLosingPlayerInputFocus(event, tableId) {
+        const inputElement = event.target;
+        inputElement.dataset.lastAction = 'focus';
+        inputElement.dataset.lastCursorPos = String(inputElement.selectionStart);
+        const suggestionsBox = document.getElementById(`losing-player-suggestions-${tableId}`);
+        if (!suggestionsBox) return;
+
+        const value = inputElement.value;
+        const cursorPosition = inputElement.selectionStart;
+        let currentSegment = '';
+        const textBeforeCursor = value.substring(0, cursorPosition);
+        const lastSlashIndex = textBeforeCursor.lastIndexOf('/');
+        if (lastSlashIndex === -1) {
+            currentSegment = textBeforeCursor;
+        } else {
+            currentSegment = textBeforeCursor.substring(lastSlashIndex + 1);
+        }
+        currentSegment = currentSegment.trimStart();
+
+        if (currentSegment.length > 0 && (inputElement.dataset.suggestionClicked !== 'true')) {
+            displayLosingPlayerSuggestions(currentSegment, suggestionsBox, inputElement);
+        }
+        inputElement.dataset.suggestionClicked = 'false';
+    }
+
+    function handleLosingPlayerInputBlur(event, tableId) {
+        const inputElement = event.target;
+        const suggestionsBox = document.getElementById(`losing-player-suggestions-${tableId}`);
+        if (!suggestionsBox) return;
+
+        setTimeout(() => {
+            if (inputElement.dataset.lastAction !== 'suggestionSelect' && document.activeElement !== inputElement && !suggestionsBox.contains(document.activeElement)) {
+                suggestionsBox.innerHTML = '';
+                suggestionsBox.style.display = 'none';
+            }
+            inputElement.dataset.lastAction = 'blur';
+        }, 150);
+    }
+
+    function displayLosingPlayerSuggestions(segmentQuery, suggestionsBox, inputElement) {
+        suggestionsBox.innerHTML = '';
+        const filteredNames = allPlayerNamesForSuggestions.filter(name =>
+            name.toLowerCase().includes(segmentQuery.toLowerCase())
+        ).slice(0, 10);
+
+        if (filteredNames.length > 0) {
+            filteredNames.forEach(name => {
+                const suggestionItem = document.createElement('div');
+                suggestionItem.className = 'px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer';
+                suggestionItem.textContent = name;
+                suggestionItem.setAttribute('role', 'option');
+
+                suggestionItem.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    inputElement.dataset.lastAction = 'suggestionSelect';
+                    inputElement.dataset.suggestionClicked = 'true';
+
+                    const selectedName = name;
+                    const originalValue = inputElement.value;
+                    const lastCursorPos = parseInt(inputElement.dataset.lastCursorPos || "0");
+
+                    const textBeforeCursor = originalValue.substring(0, lastCursorPos);
+                    const lastSlashIndex = textBeforeCursor.lastIndexOf('/');
+
+                    const prefix = originalValue.substring(0, lastSlashIndex + 1);
+
+                    let suffix = '';
+                    const partAfterCurrentSegmentTyping = originalValue.substring(lastCursorPos);
+                    const nextSlashInSuffix = partAfterCurrentSegmentTyping.indexOf('/');
+                    if (nextSlashInSuffix !== -1) {
+                        suffix = partAfterCurrentSegmentTyping.substring(nextSlashInSuffix);
+                    }
+
+                    inputElement.value = prefix + selectedName + suffix;
+
+                    suggestionsBox.innerHTML = '';
+                    suggestionsBox.style.display = 'none';
+                    inputElement.focus();
+
+                    const newCursorPosition = (prefix + selectedName).length;
+                    inputElement.setSelectionRange(newCursorPosition, newCursorPosition);
+                });
+                suggestionsBox.appendChild(suggestionItem);
+            });
+            suggestionsBox.style.display = 'block';
+        } else {
+            suggestionsBox.innerHTML = '<div class="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">No matches</div>';
+            suggestionsBox.style.display = 'block';
+        }
+    }
+
+
+    // --- Search Modal and Player Record Functions ---
+    function openSearchModal() {
+        const modal = document.getElementById('search-modal');
+        if (modal) modal.style.display = 'flex';
+        const searchPlayerNameInput = document.getElementById('search-player-name');
+        const suggestionsElement = document.getElementById('search-player-suggestions');
+        if (searchPlayerNameInput) {
+            searchPlayerNameInput.value = ''; searchPlayerNameInput.focus();
+            searchPlayerNameInput.removeEventListener('input', handleSearchInput);
+            searchPlayerNameInput.removeEventListener('focus', handleSearchFocus);
+            searchPlayerNameInput.addEventListener('input', handleSearchInput);
+            searchPlayerNameInput.addEventListener('focus', handleSearchFocus);
+        }
+        if (suggestionsElement) { suggestionsElement.innerHTML = ''; suggestionsElement.style.display = 'none'; }
+        const searchStartDateInput = document.getElementById('search-start-date');
+        if (searchStartDateInput) searchStartDateInput.value = '';
+        const searchEndDateInput = document.getElementById('search-end-date');
+        if (searchEndDateInput) searchEndDateInput.value = '';
+        const pendingSection = document.getElementById('pending-amount-section');
+        if (pendingSection) pendingSection.style.display = 'none';
+    }
+    function handleSearchInput() { showPlayerNameSuggestions('search-player-name', 'search-player-suggestions'); }
+    function handleSearchFocus() {
+        const searchPlayerNameInput = document.getElementById('search-player-name');
+        if (searchPlayerNameInput && searchPlayerNameInput.value.trim().length > 0) {
+            showPlayerNameSuggestions('search-player-name', 'search-player-suggestions');
+        }
+    }
+
+    function closeSearchModal() {
+        const modal = document.getElementById('search-modal');
+        if (modal) modal.style.display = 'none';
+        hidePlayerNameSuggestions('search-player-suggestions');
+    }
+
+    function searchPlayer() {
+        hidePlayerNameSuggestions('search-player-suggestions');
+        const playerNameInput = document.getElementById('search-player-name');
+        const startDateInput = document.getElementById('search-start-date');
+        const endDateInput = document.getElementById('search-end-date');
+        const tableBody = document.getElementById('pending-amount-table-body');
+        const pendingSection = document.getElementById('pending-amount-section');
+        const totalPendingAmountEl = document.getElementById('total-pending-amount-final');
+        const overallTotalDueEl = document.getElementById('overall-total-due-amount');
+
+        if (!playerNameInput || !startDateInput || !endDateInput || !tableBody || !pendingSection || !totalPendingAmountEl || !overallTotalDueEl) {
+            console.error("Search UI elements are missing. Cannot perform search."); return;
+        }
+
+        const playerName = playerNameInput.value.trim();
+        const startDate = startDateInput.value;
+        const endDate = endDateInput.value;
+        const normalizedPlayerName = playerName.toLowerCase();
+
+        tableBody.innerHTML = '';
+
+        if (!playerName) {
+            showAlert("Please enter a player name to search.");
+            pendingSection.style.display = 'none';
+            playerNameInput.focus();
+            return;
+        }
+
+        const balanceForPeriod = getPlayerBalance(playerName, startDate, endDate);
+        const overallBalanceDetails = getPlayerBalance(playerName);
+
+        const playerTransactionsInPeriod = history.filter(item => {
+            if (!item || !item.timestamp) return false;
+            const itemPlayer = (item.player || item.losingPlayer || '').toLowerCase();
+            if (itemPlayer !== normalizedPlayerName) return false;
+
+            const itemDate = new Date(item.timestamp);
+            itemDate.setHours(0, 0, 0, 0);
+
+            if (startDate) {
+                const filterStartDate = new Date(startDate);
+                filterStartDate.setHours(0, 0, 0, 0);
+                if (itemDate < filterStartDate) return false;
+            }
+            if (endDate) {
+                const filterEndDate = new Date(endDate);
+                filterEndDate.setHours(0, 0, 0, 0);
+                if (itemDate > filterEndDate) return false;
+            }
+            return true;
+        }).sort((a,b) => (a.timestamp || 0) - (b.timestamp || 0));
+
+        let foundAndDisplayedTransactions = false;
+        if (playerTransactionsInPeriod.length > 0) {
+            foundAndDisplayedTransactions = true;
+            playerTransactionsInPeriod.forEach(item => {
+                const row = tableBody.insertRow();
+                row.className = 'text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150';
+                const dateCell = row.insertCell(); dateCell.className = 'px-4 py-3 whitespace-nowrap text-gray-700 dark:text-gray-300'; dateCell.textContent = formatDate(item.timestamp);
+                const typeCell = row.insertCell(); typeCell.className = 'px-4 py-3 whitespace-nowrap text-gray-700 dark:text-gray-300 font-medium';
+                const descriptionCell = row.insertCell(); descriptionCell.className = 'px-4 py-3 text-gray-700 dark:text-gray-300';
+                const debitCell = row.insertCell(); debitCell.className = 'px-4 py-3 whitespace-nowrap text-right text-red-600 dark:text-red-400 print-text-red-600 font-semibold';
+                const creditCell = row.insertCell(); creditCell.className = 'px-4 py-3 whitespace-nowrap text-right text-green-600 dark:text-green-400 print-text-green-600 font-semibold';
+
+                const tableInfo = TABLE_CONFIG.find(t => t.id === item.tableId);
+                const tableName = tableInfo ? tableInfo.name : (item.tableId || 'N/A');
+
+                if (item.type === 'session') {
+                    typeCell.textContent = 'Game Session Due'; 
+                    let durationText = '';
+                    if (typeof item.gameDurationSeconds === 'number') {
+                        durationText = `Game Time: ${formatTime(item.gameDurationSeconds)}. `;
+                    }
+                    const playerTableUsageShare = item.tableUsageShare !== undefined ? item.tableUsageShare : item.amount - (item.sessionExtraCost || 0);
+                    descriptionCell.innerHTML = `<span class="block text-xs text-gray-500 dark:text-gray-400">${durationText}Table: <strong>${tableName}</strong></span>Table Usage Share: ${formatCurrency(playerTableUsageShare)}<br>Session Extras Share: ${formatCurrency(item.sessionExtraCost || 0)}`;
+                    debitCell.textContent = formatCurrency(item.amount); creditCell.textContent = '-';
+                } else if (item.type === 'general_extra') {
+                    typeCell.textContent = 'General Item Due'; descriptionCell.textContent = `Item added to account`;
+                    debitCell.textContent = formatCurrency(item.amount); creditCell.textContent = '-';
+                } else if (item.type === 'manual') {
+                    typeCell.textContent = 'Payment Received'; descriptionCell.textContent = 'Payment credited to account';
+                    debitCell.textContent = '-'; creditCell.textContent = formatCurrency(item.amount);
+                } else {
+                    typeCell.textContent = 'Unknown'; descriptionCell.textContent = 'Unknown transaction type';
+                    debitCell.textContent = '-'; creditCell.textContent = '-';
+                }
+            });
+        }
+
+        let shouldScroll = false;
+        if (playerName) {
+            if (!foundAndDisplayedTransactions && !balanceForPeriod.transactionsExist && !overallBalanceDetails.transactionsExist) {
+                tableBody.innerHTML = `<tr><td colspan="5" class="text-center text-gray-500 dark:text-gray-400 py-4 px-4 text-sm">No records found for this player.</td></tr>`;
+            } else if (!foundAndDisplayedTransactions && (balanceForPeriod.transactionsExist || overallBalanceDetails.transactionsExist)) {
+                tableBody.innerHTML = `<tr><td colspan="5" class="text-center text-gray-500 dark:text-gray-400 py-4 px-4 text-sm">No transactions found for this player within the specified date range.</td></tr>`;
+            }
+
+            pendingSection.style.display = 'block';
+            shouldScroll = true;
+
+            totalPendingAmountEl.textContent = balanceForPeriod.text;
+            totalPendingAmountEl.className = 'font-bold text-lg';
+            balanceForPeriod.className.split(' ').forEach(cls => totalPendingAmountEl.classList.add(cls));
+
+            overallTotalDueEl.textContent = overallBalanceDetails.text;
+            overallTotalDueEl.className = 'font-bold text-lg';
+            overallBalanceDetails.className.split(' ').forEach(cls => overallTotalDueEl.classList.add(cls));
+
+        } else {
+            pendingSection.style.display = 'none';
+        }
+
+        closeSearchModal();
+        if (shouldScroll) { setTimeout(() => { pendingSection.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100); }
+    }
+
+    // --- Summary Calculation ---
+    function calculateDateRangeSummary() {
+        showPasswordPrompt(() => {
+            const startDateInput = document.getElementById('summary-start-date');
+            const endDateInput = document.getElementById('summary-end-date');
+            const resultsDiv = document.getElementById('summary-results');
+            const earningsEl = document.getElementById('summary-total-earnings');
+            const duesEl = document.getElementById('summary-total-dues');
+            if (!startDateInput || !endDateInput || !resultsDiv || !earningsEl || !duesEl) {
+                console.error("Summary calculation elements not found.");
+                return;
+            }
+            const startDate = startDateInput.value;
+            const endDate = endDateInput.value;
+            let totalEarningsInPeriod = 0;
+            let totalDuesInPeriod = 0;
+            history.forEach(item => {
+                if (!item || !item.timestamp || typeof item.amount !== 'number' || isNaN(item.amount)) return;
+                const itemDate = new Date(item.timestamp);
+                itemDate.setHours(0, 0, 0, 0);
+                let isInRange = true;
+                if (startDate) {
+                    const filterStartDate = new Date(startDate);
+                    filterStartDate.setHours(0, 0, 0, 0);
+                    if (itemDate < filterStartDate) isInRange = false;
+                }
+                if (endDate) {
+                    const filterEndDate = new Date(endDate);
+                    filterEndDate.setHours(0, 0, 0, 0);
+                    if (itemDate > filterEndDate) isInRange = false;
+                }
+                if (isInRange) {
+                    if (item.type === 'manual') {
+                        totalEarningsInPeriod += item.amount;
+                    } else if (item.type === 'session' || item.type === 'general_extra') {
+                        totalDuesInPeriod += item.amount;
+                    }
+                }
+            });
+            earningsEl.textContent = formatCurrency(totalEarningsInPeriod);
+            duesEl.textContent = formatCurrency(totalDuesInPeriod);
+            resultsDiv.style.display = 'block';
+        });
+    }
+
+    // --- UI Toggling and Management Menu ---
+    function toggleManagementMenu(event) {
+        if (event) event.stopPropagation();
+        const menu = document.getElementById('management-popup-menu');
+        if (!menu) return;
+        if (menu.style.display === 'none' || menu.style.display === '') { menu.style.display = 'block'; }
+        else { menu.style.display = 'none'; }
+    }
+    
+    function renderDeleteTableOptions() {
+        const selectEl = document.getElementById('delete-table-select');
+        if (!selectEl) return;
+        selectEl.innerHTML = '';
+        if (TABLE_CONFIG.length === 0) {
+            const option = document.createElement('option');
+            option.textContent = 'No tables available to delete';
+            option.value = "none";
+            option.disabled = true;
+            selectEl.appendChild(option);
+            return;
+        }
+        TABLE_CONFIG.forEach(table => {
+            const option = document.createElement('option');
+            option.value = table.id;
+            option.textContent = `${table.name} (${table.sizeDescription})`;
+            selectEl.appendChild(option);
+        });
+    }
+
+    // --- Player Dues Section Rendering (with date filters and sorting) ---
+    function renderPlayerDuesSection() {
+        const playerDuesListContainer = document.getElementById('player-dues-list');
+        if (!playerDuesListContainer) {
+            console.error("Player dues list container not found!");
+            return;
+        }
+        playerDuesListContainer.innerHTML = '';
+
+        const startDateInput = document.getElementById('dues-filter-start-date');
+        const endDateInput = document.getElementById('dues-filter-end-date');
+        const sortOrderSelect = document.getElementById('dues-sort-order');
+
+        const startDate = startDateInput ? startDateInput.value : null;
+        const endDate = endDateInput ? endDateInput.value : null;
+        const sortOrder = sortOrderSelect ? sortOrderSelect.value : 'name_asc';
+
+        if (allPlayerNamesForSuggestions.length === 0) {
+            playerDuesListContainer.innerHTML = '<p class="text-gray-500 dark:text-gray-400 text-center py-4">No players found.</p>';
+            return;
+        }
+
+        // Create an array of player objects with their balances to facilitate sorting
+        const playersWithDues = allPlayerNamesForSuggestions.map(playerName => {
+            return {
+                name: playerName,
+                balance: getPlayerBalance(playerName, startDate, endDate).balance
+            };
+        });
+
+        // Sort the array based on the selected order
+        if (sortOrder === 'name_asc') {
+            playersWithDues.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
+        } else if (sortOrder === 'dues_desc') {
+            playersWithDues.sort((a, b) => b.balance - a.balance);
+        } else if (sortOrder === 'dues_asc') {
+            playersWithDues.sort((a, b) => a.balance - b.balance);
+        }
+
+        // Render the sorted list
+        playersWithDues.forEach(player => {
+            const balanceDetails = getPlayerBalance(player.name, startDate, endDate); // Recalculate to get formatted text and class
+            const playerDiv = document.createElement('div');
+            playerDiv.className = 'flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md text-sm';
+
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'font-medium text-gray-800 dark:text-gray-100';
+            nameSpan.textContent = player.name;
+
+            const dueSpan = document.createElement('span');
+            dueSpan.className = `font-semibold ${balanceDetails.className}`;
+            dueSpan.textContent = balanceDetails.text;
+
+            playerDiv.appendChild(nameSpan);
+            playerDiv.appendChild(dueSpan);
+            playerDuesListContainer.appendChild(playerDiv);
+        });
+    }
+
+    function applyPlayerDuesFilter() {
+        renderPlayerDuesSection();
+    }
+
+    function clearPlayerDuesFilter() {
+        const startDateInput = document.getElementById('dues-filter-start-date');
+        const endDateInput = document.getElementById('dues-filter-end-date');
+        const sortOrderSelect = document.getElementById('dues-sort-order');
+        if (startDateInput) startDateInput.value = '';
+        if (endDateInput) endDateInput.value = '';
+        if (sortOrderSelect) sortOrderSelect.value = 'name_asc';
+        renderPlayerDuesSection();
+    }
+
+    function showManagementSection(sectionIdToShow) {
+        managementSectionsIds.forEach(id => {
+            const section = document.getElementById(id);
+            if (section) {
+                if (id === sectionIdToShow) {
+                    section.classList.remove('hidden-section');
+                    if (id === 'player-dues-box') { 
+                        renderPlayerDuesSection();
+                    } else if (id === 'manage-players-box') { 
+                        renderManagePlayersSection();
+                    } else if (id === 'delete-table-box') {
+                        renderDeleteTableOptions();
+                    }
+                } else {
+                    section.classList.add('hidden-section');
+                }
+            }
+        });
+        const menu = document.getElementById('management-popup-menu');
+        if (menu && menu.style.display === 'block') { menu.style.display = 'none'; }
+        const sectionToShowElement = document.getElementById(sectionIdToShow);
+        if (sectionToShowElement) { setTimeout(() => { sectionToShowElement.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50); }
+    }
+
+    // --- Back to Top Button ---
+    const backToTopButton = document.getElementById('back-to-top-button');
+    const scrollThreshold = 300;
+    function toggleBackToTopButton() {
+        if (window.scrollY > scrollThreshold) { backToTopButton.classList.add('show'); }
+        else { backToTopButton.classList.remove('show'); }
+    }
+    function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+
+    // --- Custom Alert/Confirm (instead of window.alert/confirm) ---
+    function showAlert(message) {
+        const modalId = 'custom-alert-modal';
+        let modal = document.getElementById(modalId);
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = modalId;
+            modal.className = 'fixed inset-0 z-50 bg-gray-600 dark:bg-black bg-opacity-75 dark:bg-opacity-75 flex items-center justify-center p-4';
+            modal.innerHTML = `
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-sm">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Alert</h3>
+                    <p id="alert-message" class="text-gray-700 dark:text-gray-200 mb-6"></p>
+                    <div class="flex justify-end">
+                        <button id="alert-ok-btn" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">OK</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            modal.querySelector('#alert-ok-btn').addEventListener('click', () => modal.style.display = 'none');
+        }
+        modal.querySelector('#alert-message').textContent = message;
+        modal.style.display = 'flex';
+    }
+
+    function showCustomConfirm(message, onConfirm, onCancel = () => {}) {
+        const modalId = 'custom-confirm-modal';
+        let modal = document.getElementById(modalId);
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = modalId;
+            modal.className = 'fixed inset-0 z-50 bg-gray-600 dark:bg-black bg-opacity-75 dark:bg-opacity-75 flex items-center justify-center p-4';
+            modal.innerHTML = `
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-sm">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Confirmation</h3>
+                    <p id="confirm-message" class="text-gray-700 dark:text-gray-200 mb-6"></p>
+                    <div class="flex justify-end space-x-3">
+                        <button id="confirm-cancel-btn" class="px-4 py-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-600 hover:bg-gray-50 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Cancel</button>
+                        <button id="confirm-ok-btn" class="px-4 py-2 bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">Confirm</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        const confirmMessageEl = modal.querySelector('#confirm-message');
+        const okBtn = modal.querySelector('#confirm-ok-btn');
+        const cancelBtn = modal.querySelector('#confirm-cancel-btn');
+
+        confirmMessageEl.textContent = message;
+        modal.style.display = 'flex';
+
+        const newOkBtn = okBtn.cloneNode(true);
+        const newCancelBtn = cancelBtn.cloneNode(true);
+        okBtn.parentNode.replaceChild(newOkBtn, okBtn);
+        cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+
+        newOkBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+            onConfirm();
+        });
+        newCancelBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+            onCancel();
+        });
+    }
+
+    function showPasswordPrompt(onSuccess) {
+        const correctPassword = "admin";
+        const modalId = 'password-prompt-modal';
+        let modal = document.getElementById(modalId);
+
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = modalId;
+            modal.className = 'fixed inset-0 z-50 bg-gray-600 dark:bg-black bg-opacity-75 dark:bg-opacity-75 flex items-center justify-center p-4 no-print';
+            modal.innerHTML = `
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-sm">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Password Required</h3>
+                    <p class="text-gray-700 dark:text-gray-200 mb-4">Please enter the password to access this feature.</p>
+                    <input type="password" id="password-input" class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100 sm:text-sm">
+                    <div class="mt-6 flex justify-end space-x-3">
+                        <button id="password-cancel-btn" class="px-4 py-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-600 hover:bg-gray-50 dark:hover:bg-gray-500">Cancel</button>
+                        <button id="password-submit-btn" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-md shadow-sm">Submit</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        const passwordInput = modal.querySelector('#password-input');
+        const submitBtn = modal.querySelector('#password-submit-btn');
+        const cancelBtn = modal.querySelector('#password-cancel-btn');
+
+        const handleSubmit = () => {
+            if (passwordInput.value === correctPassword) {
+                modal.style.display = 'none';
+                passwordInput.value = '';
+                onSuccess();
+            } else {
+                showAlert('Incorrect password. Please try again.');
+                passwordInput.focus();
+            }
+        };
+
+        const handleCancel = () => {
+            modal.style.display = 'none';
+            passwordInput.value = '';
+        };
+
+        const newSubmitBtn = submitBtn.cloneNode(true);
+        submitBtn.parentNode.replaceChild(newSubmitBtn, submitBtn);
+        const newCancelBtn = cancelBtn.cloneNode(true);
+        cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+
+        newSubmitBtn.addEventListener('click', handleSubmit);
+        newCancelBtn.addEventListener('click', handleCancel);
+        passwordInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                handleSubmit();
+            }
+        });
+
+        modal.style.display = 'flex';
+        passwordInput.focus();
+    }
+
+    // --- Manage Players Section Functions ---
+    function renderManagePlayersSection(filterTerm = '') {
+        const listContainer = document.getElementById('manage-players-list');
+        if (!listContainer) return;
+
+        listContainer.innerHTML = '';
+        const normalizedFilterTerm = filterTerm.trim().toLowerCase();
+
+        const filteredPlayers = allPlayerNamesForSuggestions.filter(name =>
+            name.toLowerCase().includes(normalizedFilterTerm)
+        );
+
+        if (filteredPlayers.length === 0) {
+            listContainer.innerHTML = `<p class="text-sm text-gray-500 dark:text-gray-400 text-center py-4">${normalizedFilterTerm ? 'No players match your search.' : 'No players recorded yet.'}</p>`;
+            return;
+        }
+
+        filteredPlayers.forEach(playerName => {
+            const playerDiv = document.createElement('div');
+            playerDiv.id = `manage-player-row-${btoa(playerName)}`;
+            playerDiv.className = 'flex flex-col sm:flex-row justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md text-sm';
+
+            const playerDisplay = document.createElement('span');
+            playerDisplay.className = 'font-medium text-gray-800 dark:text-gray-100 mb-2 sm:mb-0 sm:mr-4 flex-grow';
+            playerDisplay.textContent = playerName;
+
+            const actionsDiv = document.createElement('div');
+            actionsDiv.className = 'flex space-x-2 w-full sm:w-auto';
+
+            const editButton = document.createElement('button');
+            editButton.textContent = 'Edit';
+            editButton.className = 'flex-1 sm:flex-none px-3 py-1.5 border border-transparent shadow-sm text-xs font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out';
+            editButton.onclick = () => showEditPlayerInput(playerDiv.id, playerName);
+
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Delete';
+            deleteButton.className = 'flex-1 sm:flex-none px-3 py-1.5 border border-transparent shadow-sm text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150 ease-in-out';
+            deleteButton.onclick = () => deletePlayer(playerName);
+
+            actionsDiv.appendChild(editButton);
+            actionsDiv.appendChild(deleteButton);
+
+            playerDiv.appendChild(playerDisplay);
+            playerDiv.appendChild(actionsDiv);
+            listContainer.appendChild(playerDiv);
+        });
+    }
+
+    function showEditPlayerInput(playerDivId, oldName) {
+        const playerDiv = document.getElementById(playerDivId);
+        if (!playerDiv) return;
+
+        playerDiv.innerHTML = `
+            <div class="flex flex-col sm:flex-row items-center w-full gap-2">
+                <input type="text" id="edit-player-name-input-${playerDivId}" value="${oldName}"
+                    class="flex-grow block w-full sm:w-auto px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100 sm:text-sm">
+                <div class="flex space-x-2 w-full sm:w-auto">
+                    <button onclick="saveEditedPlayerName('${playerDivId}', '${oldName}')"
+                        class="flex-1 sm:flex-none px-3 py-1.5 border border-transparent shadow-sm text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150 ease-in-out">Save</button>
+                    <button onclick="cancelEditPlayerName('${playerDivId}', '${oldName}')"
+                        class="flex-1 sm:flex-none px-3 py-1.5 border border-gray-300 dark:border-gray-500 shadow-sm text-xs font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-600 hover:bg-gray-50 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 transition duration-150 ease-in-out">Cancel</button>
+                </div>
+            </div>
+        `;
+        document.getElementById(`edit-player-name-input-${playerDivId}`).focus();
+    }
+
+    function saveEditedPlayerName(playerDivId, oldName) {
+        const inputElement = document.getElementById(`edit-player-name-input-${playerDivId}`);
+        const newName = inputElement.value.trim();
+
+        if (!newName) {
+            showAlert("Player name cannot be empty.");
+            inputElement.focus();
+            return;
+        }
+
+        if (newName.toLowerCase() === oldName.toLowerCase()) {
+            showAlert("Player name is the same. No changes saved.");
+            cancelEditPlayerName(playerDivId, oldName);
+            return;
+        }
+
+        const isDuplicate = allPlayerNamesForSuggestions.some(name =>
+            name.toLowerCase() === newName.toLowerCase() && name.toLowerCase() !== oldName.toLowerCase()
+        );
+
+        if (isDuplicate) {
+            showAlert(`Player "${newName}" already exists. Please choose a different name.`);
+            inputElement.focus();
+            return;
+        }
+        
+        createUndoSnapshot();
+
+        history.forEach(item => {
+            if (item.type === 'session' && item.losingPlayer) {
+                const losingPlayersArray = item.losingPlayer.split('/').map(p => p.trim());
+                if (losingPlayersArray.includes(oldName)) {
+                    item.losingPlayer = losingPlayersArray.map(p => p === oldName ? newName : p).join(' / ');
+                }
+            } else if ((item.type === 'manual' || item.type === 'general_extra') && item.player === oldName) {
+                item.player = newName;
+            }
+        });
+
+        saveData();
+        renderManagePlayersSection(document.getElementById('filter-manage-player-name').value);
+        renderHistory();
+        renderPlayerDuesSection();
+        showAlert(`Player "${oldName}" renamed to "${newName}" successfully.`);
+    }
+
+    function cancelEditPlayerName(playerDivId, oldName) {
+        const playerDiv = document.getElementById(playerDivId);
+        if (!playerDiv) return;
+        const playerDisplay = document.createElement('span');
+        playerDisplay.className = 'font-medium text-gray-800 dark:text-gray-100 mb-2 sm:mb-0 sm:mr-4 flex-grow';
+        playerDisplay.textContent = oldName;
+
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'flex space-x-2 w-full sm:w-auto';
+
+        const editButton = document.createElement('button');
+        editButton.textContent = 'Edit';
+        editButton.className = 'flex-1 sm:flex-none px-3 py-1.5 border border-transparent shadow-sm text-xs font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out';
+        editButton.onclick = () => showEditPlayerInput(playerDiv.id, oldName);
+
+        const deleteButton = document.createElement('button');
+        deleteButton.textContent = 'Delete';
+        deleteButton.className = 'flex-1 sm:flex-none px-3 py-1.5 border border-transparent shadow-sm text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150 ease-in-out';
+        deleteButton.onclick = () => deletePlayer(oldName);
+
+        actionsDiv.appendChild(editButton);
+        actionsDiv.appendChild(deleteButton);
+
+        playerDiv.innerHTML = '';
+        playerDiv.appendChild(playerDisplay);
+        playerDiv.appendChild(actionsDiv);
+    }
+
+    function deletePlayer(playerName) {
+        showCustomConfirm(`Are you sure you want to permanently delete ALL records for player "${playerName}"? This action can be undone.`, () => {
+            createUndoSnapshot();
+
+            history = history.filter(item => {
+                const itemPlayer = (item.player || item.losingPlayer || '').toLowerCase();
+                return itemPlayer !== playerName.toLowerCase();
+            });
+
+            saveData();
+            renderManagePlayersSection(document.getElementById('filter-manage-player-name').value);
+            renderHistory();
+            renderPlayerDuesSection();
+            showAlert(`All records for player "${playerName}" have been deleted.`);
+        });
+    }
+
+    /**
+     * A single, master update loop that runs every second.
+     * This is more performant than having multiple setIntervals.
+     * It updates the main clock and any running table timers.
+     */
+    function masterUpdateLoop() {
+        // 1. Update the main clock display
+        displayCurrentDateTime();
+
+        // 2. Iterate through all tables and update timers for those that are running
+        Object.keys(tableStates).forEach(tableId => {
+            if (tableStates[tableId] && tableStates[tableId].isRunning) {
+                updateLiveTimer(tableId);
+            }
+        });
+    }
+
+    // --- Initialization ---
+    window.onload = function() {
+        loadDarkModePreference();
+        loadData();
+        renderTables();
+        renderHistory();
+
+        // Start the single global timer for all updates.
+        if (globalUpdateInterval) clearInterval(globalUpdateInterval);
+        globalUpdateInterval = setInterval(masterUpdateLoop, 1000);
+
+        const manualPaymentPlayerInput = document.getElementById('manual-payment-player');
+        if (manualPaymentPlayerInput) {
+            manualPaymentPlayerInput.addEventListener('input', updateManualPaymentDue);
+            updateManualPaymentDue();
+        }
+
+        const filterManagePlayerNameInput = document.getElementById('filter-manage-player-name');
+        if (filterManagePlayerNameInput) {
+            filterManagePlayerNameInput.addEventListener('input', (event) => renderManagePlayersSection(event.target.value));
+        }
+
+        const duesSortOrderSelect = document.getElementById('dues-sort-order');
+        if (duesSortOrderSelect) {
+            duesSortOrderSelect.addEventListener('change', renderPlayerDuesSection);
+        }
+
+        const searchModal = document.getElementById('search-modal');
+        if (searchModal) {
+            searchModal.addEventListener('click', function(event) {
+                if (event.target === searchModal) closeSearchModal();
+            });
+        }
+
+        document.addEventListener('click', function(event) {
+            const managementMenu = document.getElementById('management-popup-menu');
+            const managementButton = document.getElementById('management-menu-button');
+            const suggestionsBoxSearch = document.getElementById('search-player-suggestions');
+            const searchInput = document.getElementById('search-player-name');
+
+            if (managementMenu && managementButton && managementMenu.style.display === 'block' &&
+                !managementMenu.contains(event.target) && event.target !== managementButton && !managementButton.contains(event.target)) {
+                managementMenu.style.display = 'none';
+            }
+
+            if (suggestionsBoxSearch && searchInput && suggestionsBoxSearch.style.display === 'block') {
+                if (event.target !== searchInput && !searchInput.contains(event.target) &&
+                    event.target !== suggestionsBoxSearch && !suggestionsBoxSearch.contains(event.target)) {
+                    hidePlayerNameSuggestions('search-player-suggestions');
+                }
+            }
+
+            TABLE_CONFIG.forEach(table => {
+                const suggestionsBoxLosing = document.getElementById(`losing-player-suggestions-${table.id}`);
+                const inputLosing = document.getElementById(`losing-player-${table.id}`);
+                if (suggestionsBoxLosing && inputLosing && suggestionsBoxLosing.style.display === 'block') {
+                    if (event.target !== inputLosing && !inputLosing.contains(event.target) &&
+                        event.target !== suggestionsBoxLosing && !suggestionsBoxLosing.contains(event.target)) {
+                       if (inputLosing.dataset.lastAction !== 'suggestionSelect') {
+                           suggestionsBoxLosing.style.display = 'none';
+                       }
+                    }
+                }
+            });
+        });
+
+        managementSectionsIds.forEach(id => {
+            const section = document.getElementById(id);
+            if (section) { section.classList.add('hidden-section'); }
+        });
+
+        // Restore UI states for all tables based on loaded data.
+        // The global timer will automatically handle the live updates for any running tables.
+        Object.keys(tableStates).forEach(tableId => {
+            const tableConfigExists = TABLE_CONFIG.find(t => t.id === tableId);
+            if (tableConfigExists && tableStates[tableId]) {
+                updateTableUI(tableId);
+            }
+        });
+
+        const summaryResultsDiv = document.getElementById('summary-results');
+        if (summaryResultsDiv) { summaryResultsDiv.style.display = 'none'; }
+
+        window.addEventListener('scroll', toggleBackToTopButton);
+        toggleBackToTopButton();
+        
+        const undoButton = document.getElementById('undo-last-action-btn');
+        if(undoButton) undoButton.disabled = true;
+
+
+        console.log("Snooker Management Initialized (v5.0 - Performance Optimized).");
+    };
+</script>
+</body>
+</html>
